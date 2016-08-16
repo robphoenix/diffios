@@ -1,0 +1,18 @@
+[Host: device-one] *************************************************************
+-
+
++
+this is additional
+
+[Host: device-three] ***********************************************************
+-
+snmp-server enable traps mpls rfc vpn
++
+this is additional also
+
+[Host: device-two] *************************************************************
+-
+snmp-server enable traps mpls rfc vpn
++
+
+
