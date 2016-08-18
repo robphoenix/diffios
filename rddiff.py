@@ -2,8 +2,7 @@ import os
 import argparse
 import datetime
 import difflib
-
-CANDIDATE = "./candidate.txt"
+import pprint
 
 
 def filelines(fp):
@@ -18,25 +17,40 @@ def hostname(f):
     return hn_lines[0].split()[1]
 
 
-timestamp = datetime.datetime.now().isoformat().split(
-        '.')[0].replace(':', '').replace('T', '-')
-fout = 'diff-{0}.txt'.format(timestamp)
-
-with open(fout, 'a') as output:
-    for f in os.listdir("./cases"):
+def compare(cases=None, candidate=None):
+    if not cases:
+        cases = "./cases"
+    if not candidate:
+        candidate = "./candidate.txt"
+    res = "\n{0:=<69} [ Start ]\n".format("")
+    # d = {}
+    for f in os.listdir(cases):
         case = os.path.join("./cases", f)
         hn = hostname(case)
-        diff = difflib.context_diff(filelines(CANDIDATE), filelines(case))
-        diff = list(diff)
+        # d[hn] = {}
+        diff = list(difflib.context_diff(filelines(candidate), filelines(case)))
         missing = '\n'.join(x[2:] for x in diff if x.startswith('- '))
         additional = '\n'.join(x[2:] for x in diff if x.startswith('+ '))
-        title = "[ Host: {hn} ] {e:*<{w}}".format(
-            hn=hn, e="", w=(79 - (len(hn) + 11)))
-        minus = "\n-\n{0}".format(missing)
-        plus = "\n+\n{0}\n".format(additional)
-        res = "{0}{1}{2}".format(title, minus, plus)
-        output.write(res)
-        print(res)
+        # d[hn]["-"] = missing
+        # d[hn]["+"] = additional
+        title = "\n[ Host: {0} ] {1:=<{2}}".format(hn, "", (79 - (len(hn) + 11)))
+        minus = "\n\n-\n\n{0}".format(missing)
+        plus = "\n\n+\n\n{0}".format(additional)
+        res += "{0}{1}{2}\n".format(title, minus, plus)
+    res += "{0:=<68} [ Finish ]\n".format("")
+    # pprint.pprint(d)
+    return res
+
+def diff_to_file(diff):
+    timestamp = datetime.datetime.now().isoformat().split(
+            '.')[0].replace(':', '').replace('T', '-')
+    fout = 'diff-{0}.txt'.format(timestamp)
+    with open(fout, 'a') as output:
+        output.write(diff)
+    return diff
+
+compare()
+# print(diff_to_file(compare()))
 
 
 # def main():
