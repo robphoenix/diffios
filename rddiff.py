@@ -18,9 +18,10 @@ def hostname(f):
     return hn_lines[0].split()[1]
 
 
-now = datetime.datetime.now().isoformat().split(
+timestamp = datetime.datetime.now().isoformat().split(
         '.')[0].replace(':', '').replace('T', '-')
-fout = 'diff-{0}.txt'.format(now)
+fout = 'diff-{0}.txt'.format(timestamp)
+
 with open(fout, 'a') as output:
     for f in os.listdir("./cases"):
         case = os.path.join("./cases", f)
@@ -29,19 +30,13 @@ with open(fout, 'a') as output:
         diff = list(diff)
         missing = '\n'.join(x[2:] for x in diff if x.startswith('- '))
         additional = '\n'.join(x[2:] for x in diff if x.startswith('+ '))
-        h = "[Host: {0}]".format(hn)
-        output.write(h + " " + ("*" * (79 - len(h))))
-        print(h + " " + ("*" * (79 - len(h))))
-        output.write("\n-\n")
-        print("\n-\n")
-        output.write(missing)
-        print(missing)
-        output.write("\n+\n")
-        print("\n+\n")
-        output.write(additional)
-        print(additional)
-        output.write("\n\n")
-        print("\n")
+        title = "[ Host: {hn} ] {e:*<{w}}".format(
+            hn=hn, e="", w=(79 - (len(hn) + 11)))
+        minus = "\n-\n{0}".format(missing)
+        plus = "\n+\n{0}\n".format(additional)
+        res = "{0}{1}{2}".format(title, minus, plus)
+        output.write(res)
+        print(res)
 
 
 # def main():
