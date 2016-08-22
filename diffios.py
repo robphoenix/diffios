@@ -19,30 +19,54 @@ def context_list(config_file):
 def compare(candidate, case):
     # this needs recursion yo
     diff = {"plus": [], "minus": []}
-    for i in case:
-        if len(i) == 1:
-            if i not in candidate:
-                diff["plus"].append(i)
-        if len(i) > 1:
-            for j in candidate:
-                if len(j) > 1:
-                    if i[0] == j[0]:
-                        plus = [i[0]]
-                        minus = [j[0]]
-                        for k in i[1:]:
-                            if k not in j[1:]:
-                                plus.append(k)
-                        for l in j[1:]:
-                            if l not in i[1:]:
-                                minus.append(l)
-                        if len(plus) > 1:
-                            diff["plus"].append(plus)
-                        if len(minus) > 1:
-                            diff["minus"].append(minus)
-    for line in candidate:
-        if len(line) == 1:
-            if line not in case:
-                diff["minus"].append(line)
+    case_grp_head = [line[0] for line in case if len(line) > 1]
+    cand_grp_head = [line[0] for line in candidate if len(line) > 1]
+    for case_line in case:
+        if len(case_line) == 1 and case_line not in candidate:
+            diff["plus"].append(case_line)
+        if len(case_line) > 1:
+            first_line = case_line[0]
+            if first_line in cand_grp_head:
+                for cand_line in candidate:
+                    if len(cand_line) > 1:
+                        if case_line[0] == cand_line[0]:
+                            plus = [case_line[0]]
+                            minus = [cand_line[0]]
+                            for case_grp_line in case_line:
+                                if case_grp_line not in cand_line:
+                                    plus.append(case_grp_line)
+                            for cand_grp_line in cand_line:
+                                if cand_grp_line not in case_line:
+                                    minus.append(cand_grp_line)
+                            if len(plus) > 1:
+                                diff["plus"].append(plus)
+                            if len(minus) > 1:
+                                diff["minus"].append(minus)
+            else:
+                diff["plus"].append(case_line)
+    for cand_line in candidate:
+        if len(cand_line) == 1 and cand_line not in case:
+            diff["minus"].append(cand_line)
+        if len(cand_line) > 1:
+            first_line = cand_line[0]
+            if first_line in case_grp_head:
+                for case_line in case:
+                    if len(case_line) > 1:
+                        if cand_line[0] == case_line[0]:
+                            plus = [cand_line[0]]
+                            minus = [case_line[0]]
+                            for cand_grp_line in cand_line:
+                                if cand_grp_line not in case_line:
+                                    plus.append(cand_grp_line)
+                            for case_grp_line in case_line:
+                                if case_grp_line not in cand_line:
+                                    minus.append(case_grp_line)
+                            if len(plus) > 1:
+                                diff["plus"].append(plus)
+                            if len(minus) > 1:
+                                diff["minus"].append(minus)
+            else:
+                diff["minus"].append(cand_line)
     return diff
 
 
