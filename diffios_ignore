@@ -1,0 +1,11 @@
+^hostname\s.*$
+^\sip\saddress\s[\d\.\s]+$
+^\sdescription\s.*$
+^\sstandby\s7\sip\s[\d.]+$
+router\sbgp\s\d+$
+^\sbgp\srouter\-id\s[\d\.]+$
+^\snetwork\s[\d\.]+\smask\s[\d\.]+$
+^\saggregate\-address\s[\d\.]+\s[\d\.]+\ssummary-only$
+^\sneighbor\s[\d\.]+\sremote\-as\s[\d]+$
+^\sneighbor\s[\d\.]+\ssoft\-reconfiguration\sinbound$
+^ip\sroute\s[\d\.]+\s[\d\.]+\s[\d\.]+$
