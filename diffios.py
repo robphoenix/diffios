@@ -1,7 +1,6 @@
 import os
 import argparse
 import datetime
-import difflib
 from pprint import pprint
 
 
