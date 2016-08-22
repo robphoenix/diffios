@@ -1,37 +1,25 @@
-import os
-import argparse
-import datetime
 from pprint import pprint
 
 
-def filelines(fp):
-    with open(fp, 'r') as f:
-        fl = [line.rstrip() for line in f.readlines()]
-    return fl
-
-
-def hostname(f):
-    fl = filelines(f)
-    hn_lines = list(ln for ln in fl if 'hostname' in ln.lower())
-    return hn_lines[0].split()[1]
-
-
-def context_list(a):
-    normalized_a, prev, context_a = [], [], []
-    a = open(a).readlines()
-    for line in a:
-        if len(line) > 3:
-            normalized_a.append(line.rstrip())
-    for line in normalized_a:
+def context_list(config_file):
+    normalize, prev, contextual = [], [], []
+    config_file = open(config_file).readlines()
+    for line in config_file:
+        if not line.startswith("!") and len(line) > 1:
+            normalize.append(line.rstrip())
+    for line in normalize:
         if line.startswith(" "):
             prev.append(line)
         else:
-            context_a.append(prev)
+            contextual.append(prev)
             prev = [line]
-    return context_a
+    return contextual
 
 
-pprint(context_list("./jon_candidate.conf"))
+c = context_list("./jon_candidate.conf")
+for line in sorted(c):
+    if len(line) == 1:
+        pprint(line)
 
 
 # def main():
