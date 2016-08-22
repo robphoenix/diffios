@@ -1,4 +1,14 @@
+import re
 from pprint import pprint
+
+
+IGNORE = "./diffios_ignore"
+
+
+def ignored(ig=IGNORE):
+    ig = open(ig).readlines()
+    res = [re.compile(pattern) for pattern in ig]
+    return res
 
 
 def context_list(config_file):
@@ -17,7 +27,6 @@ def context_list(config_file):
 
 
 def compare(candidate, case):
-    # this needs recursion yo
     diff = {"plus": [], "minus": []}
     case_grp_head = [line[0] for line in case if len(line) > 1]
     cand_grp_head = [line[0] for line in candidate if len(line) > 1]
