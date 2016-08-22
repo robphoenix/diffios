@@ -13,14 +13,44 @@ def context_list(config_file):
         else:
             contextual.append(prev)
             prev = [line]
-    return contextual
+    return sorted(contextual)
 
 
-c = context_list("./jon_candidate.conf")
-for line in sorted(c):
-    if len(line) == 1:
-        pprint(line)
+def compare(candidate, case):
+    # this needs recursion yo
+    diff = {"plus": [], "minus": []}
+    for i in case:
+        if len(i) == 1:
+            if i not in candidate:
+                diff["plus"].append(i)
+        if len(i) > 1:
+            for j in candidate:
+                if len(j) > 1:
+                    if i[0] == j[0]:
+                        plus = [i[0]]
+                        minus = [j[0]]
+                        for k in i[1:]:
+                            if k not in j[1:]:
+                                plus.append(k)
+                        for l in j[1:]:
+                            if l not in i[1:]:
+                                minus.append(l)
+                        if len(plus) > 1:
+                            diff["plus"].append(plus)
+                        if len(minus) > 1:
+                            diff["minus"].append(minus)
+    for line in candidate:
+        if len(line) == 1:
+            if line not in case:
+                diff["minus"].append(line)
+    return diff
 
+
+candidate = context_list("./jon_candidate.conf")
+case = context_list("./jon_cases/10.1.240.19.conf")
+
+diff = compare(candidate, case)
+pprint(diff)
 
 # def main():
 
