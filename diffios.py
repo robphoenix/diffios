@@ -51,25 +51,23 @@ def context_list(config_file, ignore_file=None):
 
 
 def build_diff(a, b):
-    diff_list = []
-    head = [line[0] for line in b if len(line) > 1]
-    for a_line in a:
-        if len(a_line) == 1 and a_line not in b:
-            diff_list.append(a_line)
-        if len(a_line) > 1:
-            first_line = a_line[0]
-            if first_line in head:
-                for b_line in b:
-                    if len(b_line) > 1:
-                        if a_line[0] == b_line[0]:
-                            plus = [a_line[0]]
-                            for a_grp_line in a_line:
-                                if a_grp_line not in b_line:
-                                    plus.append(a_grp_line)
-                            if len(plus) > 1:
-                                diff_list.append(plus)
-            else:
-                diff_list.append(a_line)
+    diff_list = [line for line in a if len(line) == 1 and line not in b]
+    groups_a = [line for line in a if len(line) > 1]
+    groups_b = [line for line in b if len(line) > 1]
+    head = [line[0] for line in groups_b]
+    for a_group in groups_a:
+        first_line = a_group[0]
+        if first_line in head:
+            for b_group in groups_b:
+                if first_line == b_group[0]:
+                    plus = [first_line]
+                    for line in a_group:
+                        if line not in b_group:
+                            plus.append(line)
+                    if len(plus) > 1:
+                        diff_list.append(plus)
+        else:
+            diff_list.append(a_group)
     return diff_list
 
 
