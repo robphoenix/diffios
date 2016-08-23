@@ -2,36 +2,52 @@ import re
 from pprint import pprint
 
 
-IGNORE = "./diffios_ignore"
+IGNORE_FILE = "./diffios_ignore"
 
 
-def context_list(config_file):
-    ig, normalize, prev, contextual = [], [], [], []
-    config_file = open(config_file).readlines()
-    for line in config_file:
-        if not line.startswith("!") and len(line) > 1:
-            normalize.append(line.rstrip())
-    for line in normalize:
+def normalize(config_file):
+    data = open(config_file).readlines()
+    return [line.rstrip() for line in data if valid_line(line)]
+
+
+def valid_line(line):
+    line = line.strip()
+    return len(line) > 0 and not line.startswith("!")
+
+
+def group(conf):
+    prev, grouped = [], []
+    for line in conf:
         if line.startswith(" "):
             prev.append(line)
         else:
-            contextual.append(prev)
+            grouped.append(prev)
             prev = [line]
-    ignored = open(IGNORE).readlines()
-    ignored = [elem.strip() for elem in ignored]
-    contextual = [elem for elem in contextual if len(elem) > 0]
-    for m, elem in enumerate(contextual):
-        for n, e in enumerate(elem):
-            for i in ignored:
-                if re.findall(i, e.lower()):
-                    if n == 0:
-                        ig.append(contextual[m])
-                        contextual[m] = []
+    return sorted(grouped)[1:]
+
+
+def ignore_list(ignore_file=None):
+    return [elem.strip() for elem in open(ignore_file).readlines()]
+
+
+def context_list(config_file, ignore_file=None):
+    if not ignore_file:
+        ignore_file = IGNORE_FILE
+    ignored = []
+    normalized = normalize(config_file)
+    to_ignore = ignore_list(ignore_file)
+    grouped = group(normalized)
+    for group_index, grp in enumerate(grouped):
+        for line_index, line in enumerate(grp):
+            for ignore in to_ignore:
+                if re.findall(ignore, line.lower()):
+                    if line_index == 0:
+                        ignored.append(grouped[group_index])
+                        grouped[group_index] = []
                     else:
-                        ig.append(elem[n])
-                        elem[n] = ""
-    contextual = [x for x in contextual if len(x) > 0]
-    return sorted(contextual)
+                        ignored.append(grp[line_index])
+                        grp[line_index] = ""
+    return [line for line in grouped if line]
 
 
 def compare(candidate, case):
@@ -90,5 +106,8 @@ def compare(candidate, case):
 candidate = context_list("./jon_candidate.conf")
 case = context_list("./jon_cases/10.1.240.19.conf")
 
-diff = compare(candidate, case)
-pprint(diff)
+for line in candidate:
+    print(line)
+
+# diff = compare(candidate, case)
+# pprint(diff)
