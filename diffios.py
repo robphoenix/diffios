@@ -5,14 +5,8 @@ from pprint import pprint
 IGNORE = "./diffios_ignore"
 
 
-def ignored(ig=IGNORE):
-    ig = open(ig).readlines()
-    res = [re.compile(pattern) for pattern in ig]
-    return res
-
-
 def context_list(config_file):
-    normalize, prev, contextual = [], [], []
+    ig, normalize, prev, contextual = [], [], [], []
     config_file = open(config_file).readlines()
     for line in config_file:
         if not line.startswith("!") and len(line) > 1:
@@ -23,6 +17,20 @@ def context_list(config_file):
         else:
             contextual.append(prev)
             prev = [line]
+    ignored = open(IGNORE).readlines()
+    ignored = [elem.strip() for elem in ignored]
+    contextual = [elem for elem in contextual if len(elem) > 0]
+    for m, elem in enumerate(contextual):
+        for n, e in enumerate(elem):
+            for i in ignored:
+                if re.findall(i, e.lower()):
+                    if n == 0:
+                        ig.append(contextual[m])
+                        contextual[m] = []
+                    else:
+                        ig.append(elem[n])
+                        elem[n] = ""
+    contextual = [x for x in contextual if len(x) > 0]
     return sorted(contextual)
 
 
