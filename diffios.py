@@ -3,6 +3,10 @@ from pprint import pprint
 
 
 IGNORE_FILE = "./diffios_ignore"
+PARTIALS = [
+    "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
+    "^(?P<non_var> description ).+"
+]
 
 
 def normalize(config_file):
@@ -50,6 +54,16 @@ def context_list(config_file, ignore_file=None):
     return [line for line in grouped if line]
 
 
+def sanitise_variables(group):
+    sanitised = []
+    for line in group:
+        for pattern in PARTIALS:
+            if re.search(pattern, line):
+                line = re.search(pattern, line).group('non_var')
+        sanitised.append(line)
+    return sanitised
+
+
 def build_diff(a, b):
     diff_list = [line for line in a if len(line) == 1 and line not in b]
     groups_a = [line for line in a if len(line) > 1]
@@ -61,9 +75,11 @@ def build_diff(a, b):
             for b_group in groups_b:
                 if first_line == b_group[0]:
                     plus = [first_line]
-                    for line in a_group:
-                        if line not in b_group:
-                            plus.append(line)
+                    sanitised_a = sanitise_variables(a_group)
+                    sanitised_b = sanitise_variables(b_group)
+                    for index, line in enumerate(sanitised_a):
+                        if line not in sanitised_b:
+                            plus.append(a_group[index])
                     if len(plus) > 1:
                         diff_list.append(plus)
         else:
@@ -78,7 +94,7 @@ def compare(candidate, case):
 
 
 candidate = context_list("./jon_candidate.conf")
-case = context_list("./jon_cases/10.1.240.19.conf")
+case = context_list("./jon_cases/10.1.240.20.conf")
 
 diff = compare(candidate, case)
 pprint(diff)

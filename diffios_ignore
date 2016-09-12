@@ -1,9 +1,5 @@
 hostname\s\w+
-ip\saddress\s[\d\.\s]+
-description\s.+
 serial\snumber
-^vlan\s\d+
-^\sname\s[\w_]+
 crypto\spki\strustpoint
 crypto\spki\scertificate
 processor\sboard
