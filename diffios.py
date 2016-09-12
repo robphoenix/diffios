@@ -26,7 +26,7 @@ def group(conf):
     return sorted(grouped)[1:]
 
 
-def ignore_list(ignore_file=None):
+def ignore_list(ignore_file):
     return [elem.strip() for elem in open(ignore_file).readlines()]
 
 
