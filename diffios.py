@@ -5,7 +5,8 @@ from pprint import pprint
 IGNORE_FILE = "./diffios_ignore"
 PARTIALS = [
     "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
-    "^(?P<non_var> description ).+"
+    "^(?P<non_var> description ).+",
+    "(?P<non_var>ip dhcp snooping vlan ).+"
 ]
 
 
@@ -65,7 +66,13 @@ def sanitise_variables(group):
 
 
 def build_diff(a, b):
-    diff_list = [line for line in a if len(line) == 1 and line not in b]
+    san_a = [sanitise_variables(line) for line in a if len(line) == 1]
+    san_b = [sanitise_variables(line) for line in b if len(line) == 1]
+    single_a = [line for line in a if len(line) == 1]
+    diff_list = []
+    for index, line in enumerate(san_a):
+        if line not in san_b:
+            diff_list.append(single_a[index])
     groups_a = [line for line in a if len(line) > 1]
     groups_b = [line for line in b if len(line) > 1]
     head = [line[0] for line in groups_b]
@@ -83,6 +90,8 @@ def build_diff(a, b):
                     if len(plus) > 1:
                         diff_list.append(plus)
         else:
+            sanitised_groups_b = [sanitise_variables(line) for line in groups_b]
+            head = [line[0] for line in sanitised_groups_b]
             diff_list.append(a_group)
     return diff_list
 
