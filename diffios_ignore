@@ -1,10 +1,11 @@
-hostname\s\w+
-serial\snumber
-crypto\spki\strustpoint
-crypto\spki\scertificate
-processor\sboard
+building configuration
+hostname
+serial number
+crypto pki trustpoint
+crypto pki certificate
+processor board
 reload
 uptime
-current\sconfiguration
+current configuration
 mac address
-^\sserver\sname
+^ server name

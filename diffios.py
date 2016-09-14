@@ -96,14 +96,57 @@ def build_diff(a, b):
     return diff_list
 
 
-def compare(candidate, case):
+def diff(candidate, case):
     case_plus = build_diff(case, candidate)
     case_minus = build_diff(candidate, case)
     return {"plus": case_plus, "minus": case_minus}
 
 
-candidate = context_list("./jon_candidate.conf")
-case = context_list("./jon_cases/10.1.240.20.conf")
+def similarity(first, second):
+    plus = first
+    minus = second
+    join_plus = ["\n".join(elem) for elem in plus]
+    join_minus = ["\n".join(elem) for elem in minus]
+    split_plus = [elem.split() for elem in join_plus]
+    split_minus = [elem.split() for elem in join_minus]
+    res = []
+    for i, p in enumerate(split_plus):
+        high_score = 0
+        lines = None
+        for j, m in enumerate(split_minus):
+            zipped = list(zip(p, m))
+            same = [(a, b) for (a, b) in zipped if a == b]
+            discontiguous_score = float(len(same)) / float(len(zipped))
+            contiguous_score = 0
+            for (a, b) in zipped:
+                if a == b:
+                    contiguous_score += 1
+                else:
+                    break
+            score = discontiguous_score + contiguous_score
+            if score >= high_score:
+                high_score = score
+                if score == 0:
+                    lines = (plus[i], [])
+                else:
+                    lines = (plus[i], minus[j])
+        res.append(lines)
+    # pprint(res)
+    return res
+        # a, b = lines
+        # print("first:\t", a)
+        # print("second:\t", b)
+        # print("score:\t", high_score)
+        # print("lines:\t", lines)
 
-diff = compare(candidate, case)
-pprint(diff)
+
+candidate = context_list("./jon_candidate.conf")
+case = context_list("./jon_cases/10.1.240.19.conf")
+
+d = diff(candidate, case)
+x = similarity(d["plus"], d["minus"])
+y = similarity(d["minus"], d["plus"])
+res = [el for el in y if el[1] == []]
+pprint(x + res)
+
+# pprint(d)
