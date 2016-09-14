@@ -103,13 +103,12 @@ def diff(candidate, case):
 
 
 def similarity(first, second):
-    plus = first
-    minus = second
-    join_plus = ["\n".join(elem) for elem in plus]
-    join_minus = ["\n".join(elem) for elem in minus]
+    join_plus = ["\n".join(elem) for elem in first]
+    join_minus = ["\n".join(elem) for elem in second]
     split_plus = [elem.split() for elem in join_plus]
     split_minus = [elem.split() for elem in join_minus]
-    res = []
+    amber = []
+    red = []
     for i, p in enumerate(split_plus):
         high_score = 0
         lines = None
@@ -127,26 +126,52 @@ def similarity(first, second):
             if score >= high_score:
                 high_score = score
                 if score == 0:
-                    lines = (plus[i], [])
+                    lines = (first[i], [])
                 else:
-                    lines = (plus[i], minus[j])
-        res.append(lines)
-    # pprint(res)
-    return res
-        # a, b = lines
-        # print("first:\t", a)
-        # print("second:\t", b)
-        # print("score:\t", high_score)
-        # print("lines:\t", lines)
+                    lines = (score, first[i], second[j])
+        if lines[-1] == []:
+            red.append(lines)
+        else:
+            amber.append(lines)
+    cleaned_amber = []
+    extras = []
+    for el1 in amber:
+        for el2 in amber:
+            if el1 != el2 and el1[2] == el2[2]:
+                amber.remove(el1)
+                amber.remove(el2)
+                if el1[0] > el2[0]:
+                    cleaned_amber.append(tuple(el1[1:]))
+                    extras.append(tuple(el2[1:]))
+                else:
+                    cleaned_amber.append(tuple(el2[1:]))
+                    extras.append(tuple(el1[1:]))
+    amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
+    red = red + [(a, []) for (a, _) in extras]
+    return (amber, red)
 
 
 candidate = context_list("./jon_candidate.conf")
 case = context_list("./jon_cases/10.1.240.19.conf")
 
 d = diff(candidate, case)
-x = similarity(d["plus"], d["minus"])
-y = similarity(d["minus"], d["plus"])
-res = [el for el in y if el[1] == []]
-pprint(x + res)
+(diff_case, additional) = similarity(d["plus"], d["minus"])
+(diff_cand, missing) = similarity(d["minus"], d["plus"])
+# pprint(additional)
+# pprint(missing)
+# pprint(sorted(diff_case))
+# pprint(sorted(diff_cand))
+# s = []
+# for el in sorted(diff_cand):
+    # s.append(el[::-1])
+# print(sorted(diff_case) == s)
+# pprint(list(zip(diff_case, diff_cand)))
 
-# pprint(d)
+print("missing:")
+pprint(missing)
+print("\n")
+print("additional:")
+pprint(additional)
+print("\n")
+print("similar:")
+pprint(diff_case)
