@@ -1,4 +1,6 @@
 import re
+import os
+import csv
 from pprint import pprint
 
 
@@ -40,6 +42,10 @@ def context_list(config_file, ignore_file=None):
         ignore_file = IGNORE_FILE
     ignored = []
     normalized = normalize(config_file)
+    for line in normalized:
+        if "hostname" in line.lower():
+            hostname = line.split()[1]
+            break
     to_ignore = ignore_list(ignore_file)
     grouped = group(normalized)
     for group_index, grp in enumerate(grouped):
@@ -52,7 +58,7 @@ def context_list(config_file, ignore_file=None):
                     else:
                         ignored.append(grp[line_index])
                         grp[line_index] = ""
-    return [line for line in grouped if line]
+    return (hostname, [line for line in grouped if line])
 
 
 def sanitise_variables(group):
@@ -66,6 +72,8 @@ def sanitise_variables(group):
 
 
 def build_diff(a, b):
+    (hn_a, a) = a
+    (hn_b, b) = b
     san_a = [sanitise_variables(line) for line in a if len(line) == 1]
     san_b = [sanitise_variables(line) for line in b if len(line) == 1]
     single_a = [line for line in a if len(line) == 1]
@@ -93,13 +101,36 @@ def build_diff(a, b):
             sanitised_groups_b = [sanitise_variables(line) for line in groups_b]
             head = [line[0] for line in sanitised_groups_b]
             diff_list.append(a_group)
-    return diff_list
+    a_additional = (hn_a, diff_list)
+    return a_additional
 
 
 def diff(candidate, case):
-    case_plus = build_diff(case, candidate)
-    case_minus = build_diff(candidate, case)
-    return {"plus": case_plus, "minus": case_minus}
+    (case_hn, case_plus) = build_diff(case, candidate)
+    (candidate_hn, case_minus) = build_diff(candidate, case)
+    (diff_case, additional) = similarity(case_plus, case_minus)
+    (diff_cand, missing) = similarity(case_minus, case_plus)
+    reverse_missing = []
+    for el in sorted(missing):
+        reverse_missing.append(el[::-1])
+    missing = reverse_missing
+    if len(diff_case) == len(diff_cand):
+        missing = res_tups_to_dicts(case_hn, candidate_hn, missing)
+        additional = res_tups_to_dicts(case_hn, candidate_hn, additional)
+        similar = res_tups_to_dicts(case_hn, candidate_hn, diff_case)
+    return (case_hn, candidate_hn, missing + additional + similar)
+
+
+def res_tups_to_dicts(a, b, res):
+    dict_list = []
+    for el in res:
+        (first, second) = el
+        if second == []:
+            second = [""]
+        if first == []:
+            first = [""]
+        dict_list.append({a: "\n".join(first), b: "\n".join(second)})
+    return dict_list
 
 
 def similarity(first, second):
@@ -151,27 +182,17 @@ def similarity(first, second):
     return (amber, red)
 
 
+
+def write_to_csv(case, candidate, content):
+    with open(os.path.join(os.getcwd(), "case-{0}-candidate-{1}.csv".format(case, candidate)), 'w') as csvfile:
+            fieldnames = [case, candidate]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(content)
+
+
 candidate = context_list("./jon_candidate.conf")
 case = context_list("./jon_cases/10.1.240.19.conf")
 
-d = diff(candidate, case)
-(diff_case, additional) = similarity(d["plus"], d["minus"])
-(diff_cand, missing) = similarity(d["minus"], d["plus"])
-# pprint(additional)
-# pprint(missing)
-# pprint(sorted(diff_case))
-# pprint(sorted(diff_cand))
-# s = []
-# for el in sorted(diff_cand):
-    # s.append(el[::-1])
-# print(sorted(diff_case) == s)
-# pprint(list(zip(diff_case, diff_cand)))
-
-print("missing:")
-pprint(missing)
-print("\n")
-print("additional:")
-pprint(additional)
-print("\n")
-print("similar:")
-pprint(diff_case)
+(case, candidate, content) = diff(candidate, case)
+write_to_csv(case, candidate, content)
