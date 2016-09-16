@@ -4,6 +4,7 @@ jon*
 diff*.txt
 anchor/
 diffs/
+diffs.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
