@@ -129,7 +129,7 @@ def res_tups_to_dicts(res):
             second = [""]
         if first == []:
             first = [""]
-        dict_list.append({"Case": "\n".join(first), "Candidate": "\n".join(second)})
+        dict_list.append({"***** Case *****": "\n".join(first), "***** Candidate *****": "\n".join(second)})
     return dict_list
 
 
@@ -172,13 +172,19 @@ def similarity(first, second):
                 if el1[0] > el2[0]:
                     cleaned_amber.append(tuple(el1[1:]))
                     extras.append(tuple(el2[1:]))
+                    try:
+                        amber.remove(el1)
+                        amber.remove(el2)
+                    except:
+                        continue
                 else:
                     cleaned_amber.append(tuple(el2[1:]))
                     extras.append(tuple(el1[1:]))
-                if el1 in amber:
-                    amber.remove(el1)
-                if el2 in amber:
-                    amber.remove(el2)
+                    try:
+                        amber.remove(el1)
+                        amber.remove(el2)
+                    except:
+                        continue
     amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
     red = red + [(a, []) for (a, _) in extras]
     return (amber, red)
@@ -188,11 +194,13 @@ def similarity(first, second):
 def write_to_csv(case, candidate, filename, content):
     # filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
     with open(filename, 'a') as csvfile:
-            fieldnames = ["Case", "Candidate"]
+            fieldnames = ["***** Case *****", "***** Candidate *****"]
             writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerow({"Case": case, "Candidate": candidate})
+            writer.writerow({"***** Case *****": case, "***** Candidate *****": candidate})
+            writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
             writer.writerows(content)
+            writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
 
 
 # candidate = context_list("./jon_candidate.conf")
