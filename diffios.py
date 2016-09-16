@@ -8,7 +8,8 @@ IGNORE_FILE = "./diffios_ignore"
 PARTIALS = [
     "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
     "^(?P<non_var> description ).+",
-    "(?P<non_var>ip dhcp snooping vlan ).+"
+    "(?P<non_var>ip dhcp snooping vlan ).+",
+    "(?P<non_var>ip default-gateway ).+"
 ]
 
 
@@ -34,7 +35,7 @@ def group(conf):
 
 
 def ignore_list(ignore_file):
-    return [elem.strip() for elem in open(ignore_file).readlines()]
+    return [elem.strip().lower() for elem in open(ignore_file).readlines()]
 
 
 def context_list(config_file, ignore_file=None):
@@ -114,10 +115,9 @@ def diff(candidate, case):
     for el in sorted(missing):
         reverse_missing.append(el[::-1])
     missing = reverse_missing
-    if len(diff_case) == len(diff_cand):
-        missing = res_tups_to_dicts(case_hn, candidate_hn, missing)
-        additional = res_tups_to_dicts(case_hn, candidate_hn, additional)
-        similar = res_tups_to_dicts(case_hn, candidate_hn, diff_case)
+    missing = res_tups_to_dicts(case_hn, candidate_hn, missing)
+    additional = res_tups_to_dicts(case_hn, candidate_hn, additional)
+    similar = res_tups_to_dicts(case_hn, candidate_hn, diff_case)
     return (case_hn, candidate_hn, missing + additional + similar)
 
 
@@ -169,14 +169,16 @@ def similarity(first, second):
     for el1 in amber:
         for el2 in amber:
             if el1 != el2 and el1[2] == el2[2]:
-                amber.remove(el1)
-                amber.remove(el2)
                 if el1[0] > el2[0]:
                     cleaned_amber.append(tuple(el1[1:]))
                     extras.append(tuple(el2[1:]))
                 else:
                     cleaned_amber.append(tuple(el2[1:]))
                     extras.append(tuple(el1[1:]))
+                if el1 in amber:
+                    amber.remove(el1)
+                if el2 in amber:
+                    amber.remove(el2)
     amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
     red = red + [(a, []) for (a, _) in extras]
     return (amber, red)
@@ -184,15 +186,22 @@ def similarity(first, second):
 
 
 def write_to_csv(case, candidate, content):
-    with open(os.path.join(os.getcwd(), "case-{0}-candidate-{1}.csv".format(case, candidate)), 'w') as csvfile:
+    filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
+    print("==> Building {}".format(filename))
+    with open(os.path.join(os.getcwd(), filename), 'w') as csvfile:
             fieldnames = [case, candidate]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(content)
 
 
-candidate = context_list("./jon_candidate.conf")
-case = context_list("./jon_cases/10.1.240.19.conf")
+# candidate = context_list("./jon_candidate.conf")
+# case = context_list("./jon_cases/10.1.240.19.conf")
 
-(case, candidate, content) = diff(candidate, case)
-write_to_csv(case, candidate, content)
+anchor_directory = os.path.join(os.getcwd(), "anchor")
+candidate = context_list(os.path.join(anchor_directory, "10.145.63.91.conf"))
+for fin in os.listdir(anchor_directory):
+    fin = os.path.join(anchor_directory, fin)
+    case = context_list(fin)
+    (comparison, base, content) = diff(candidate, case)
+    write_to_csv(comparison, base, content)
