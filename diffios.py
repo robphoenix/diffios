@@ -115,13 +115,13 @@ def diff(candidate, case):
     for el in sorted(missing):
         reverse_missing.append(el[::-1])
     missing = reverse_missing
-    missing = res_tups_to_dicts(case_hn, candidate_hn, missing)
-    additional = res_tups_to_dicts(case_hn, candidate_hn, additional)
-    similar = res_tups_to_dicts(case_hn, candidate_hn, diff_case)
+    missing = res_tups_to_dicts(missing)
+    additional = res_tups_to_dicts(additional)
+    similar = res_tups_to_dicts(diff_case)
     return (case_hn, candidate_hn, missing + additional + similar)
 
 
-def res_tups_to_dicts(a, b, res):
+def res_tups_to_dicts(res):
     dict_list = []
     for el in res:
         (first, second) = el
@@ -129,7 +129,7 @@ def res_tups_to_dicts(a, b, res):
             second = [""]
         if first == []:
             first = [""]
-        dict_list.append({a: "\n".join(first), b: "\n".join(second)})
+        dict_list.append({"Case": "\n".join(first), "Candidate": "\n".join(second)})
     return dict_list
 
 
@@ -185,13 +185,13 @@ def similarity(first, second):
 
 
 
-def write_to_csv(case, candidate, content):
-    filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
-    print("==> Building {}".format(filename))
-    with open(os.path.join(os.getcwd(), filename), 'w') as csvfile:
-            fieldnames = [case, candidate]
+def write_to_csv(case, candidate, filename, content):
+    # filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
+    with open(filename, 'a') as csvfile:
+            fieldnames = ["Case", "Candidate"]
             writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
             writer.writeheader()
+            writer.writerow({"Case": case, "Candidate": candidate})
             writer.writerows(content)
 
 
@@ -200,8 +200,13 @@ def write_to_csv(case, candidate, content):
 
 anchor_directory = os.path.join(os.getcwd(), "anchor")
 candidate = context_list(os.path.join(anchor_directory, "10.145.63.91.conf"))
+filename = os.path.join(os.getcwd(), "diffs.csv")
+
+i = 1
 for fin in os.listdir(anchor_directory):
+    print("{0}:\t{1}".format(i, fin))
     fin = os.path.join(anchor_directory, fin)
     case = context_list(fin)
     (comparison, base, content) = diff(candidate, case)
-    write_to_csv(comparison, base, content)
+    write_to_csv(comparison, base, filename, content)
+    i += 1
