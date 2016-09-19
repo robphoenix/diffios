@@ -107,112 +107,14 @@ def build_diff(a, b):
 def diff(candidate, case):
     case_plus = build_diff(case, candidate)
     case_minus = build_diff(candidate, case)
-    # pprint(case_plus)
-    # pprint(case_minus)
-    # (diff_case, additional) = similarity(case_plus, case_minus)
-    # (diff_cand, missing) = similarity(case_minus, case_plus)
-    # reverse_missing = []
-    # for el in sorted(missing):
-    #     reverse_missing.append(el[::-1])
-    # missing = reverse_missing
-    # missing = res_tups_to_dicts(missing)
-    # additional = res_tups_to_dicts(additional)
-    # similar = res_tups_to_dicts(diff_case)
-    # return (case_hn, candidate_hn, missing + additional + similar)
     return (case_plus, case_minus)
-
-
-# def res_tups_to_dicts(res):
-#     dict_list = []
-#     for el in res:
-#         (first, second) = el
-#         if second == []:
-#             second = [""]
-#         if first == []:
-#             first = [""]
-#         dict_list.append({"***** Case *****": "\n".join(first), "***** Candidate *****": "\n".join(second)})
-#     return dict_list
-
-
-# def similarity(first, second):
-#     join_plus = ["\n".join(elem) for elem in first]
-#     join_minus = ["\n".join(elem) for elem in second]
-#     split_plus = [elem.split() for elem in join_plus]
-#     split_minus = [elem.split() for elem in join_minus]
-#     amber = []
-#     red = []
-#     for i, p in enumerate(split_plus):
-#         high_score = 0
-#         lines = None
-#         for j, m in enumerate(split_minus):
-#             zipped = list(zip(p, m))
-#             same = [(a, b) for (a, b) in zipped if a == b]
-#             discontiguous_score = float(len(same)) / float(len(zipped))
-#             contiguous_score = 0
-#             for (a, b) in zipped:
-#                 if a == b:
-#                     contiguous_score += 1
-#                 else:
-#                     break
-#             score = discontiguous_score + contiguous_score
-#             if score >= high_score:
-#                 high_score = score
-#                 if score == 0:
-#                     lines = (first[i], [])
-#                 else:
-#                     lines = (score, first[i], second[j])
-#         if lines[-1] == []:
-#             red.append(lines)
-#         else:
-#             amber.append(lines)
-#     cleaned_amber = []
-#     extras = []
-#     for el1 in amber:
-#         for el2 in amber:
-#             if el1 != el2 and el1[2] == el2[2]:
-#                 if el1[0] > el2[0]:
-#                     cleaned_amber.append(tuple(el1[1:]))
-#                     extras.append(tuple(el2[1:]))
-#                     try:
-#                         amber.remove(el1)
-#                         amber.remove(el2)
-#                     except:
-#                         continue
-#                 else:
-#                     cleaned_amber.append(tuple(el2[1:]))
-#                     extras.append(tuple(el1[1:]))
-#                     try:
-#                         amber.remove(el1)
-#                         amber.remove(el2)
-#                     except:
-#                         continue
-#     amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
-#     red = red + [(a, []) for (a, _) in extras]
-#     return (amber, red)
 
 
 def diff_to_csv(tup):
     return ["\n".join(["\n".join(el) for el in liszt]) for liszt in tup]
 
-
-# def write_to_csv(case, candidate, filename, content):
-#     # filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
-#     with open(filename, 'a') as csvfile:
-#             fieldnames = ["***** Case *****", "***** Candidate *****"]
-#             writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
-#             writer.writeheader()
-#             writer.writerow({"***** Case *****": case, "***** Candidate *****": candidate})
-#             writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
-#             writer.writerows(content)
-#             writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
-
-
-# candidate = context_list("./jon_candidate.conf")
-# case = context_list("./jon_cases/10.1.240.19.conf")
-
 anchor_directory = os.path.join(os.getcwd(), "anchor")
 candidate = context_list(os.path.join(anchor_directory, "10.145.63.91.conf"))
-# filename = os.path.join(os.getcwd(), "diffs.csv")
 
 with open("diffs.csv", 'ab') as csvfile:
     csvwriter = csv.writer(csvfile)
@@ -222,8 +124,6 @@ with open("diffs.csv", 'ab') as csvfile:
         print("{0}:\t{1}".format(i, fin))
         fn = os.path.join(anchor_directory, fin)
         case = context_list(fn)
-        # (comparison, base, content) = diff(candidate, case)
-        # write_to_csv(comparison, base, filename, content)
         content = diff_to_csv(diff(candidate, case))
         csvwriter.writerow([fin] + content)
         i += 1
