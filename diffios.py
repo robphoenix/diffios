@@ -9,7 +9,8 @@ PARTIALS = [
     "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
     "^(?P<non_var> description ).+",
     "(?P<non_var>ip dhcp snooping vlan ).+",
-    "(?P<non_var>ip default-gateway ).+"
+    "(?P<non_var>ip default-gateway ).+",
+    "(?P<non_var>switchport trunk allowed vlan ).+"
 ]
 
 
@@ -73,8 +74,6 @@ def sanitise_variables(group):
 
 
 def build_diff(a, b):
-    (hn_a, a) = a
-    (hn_b, b) = b
     san_a = [sanitise_variables(line) for line in a if len(line) == 1]
     san_b = [sanitise_variables(line) for line in b if len(line) == 1]
     single_a = [line for line in a if len(line) == 1]
@@ -102,105 +101,110 @@ def build_diff(a, b):
             sanitised_groups_b = [sanitise_variables(line) for line in groups_b]
             head = [line[0] for line in sanitised_groups_b]
             diff_list.append(a_group)
-    a_additional = (hn_a, diff_list)
-    return a_additional
+    return diff_list
 
 
 def diff(candidate, case):
-    (case_hn, case_plus) = build_diff(case, candidate)
-    (candidate_hn, case_minus) = build_diff(candidate, case)
-    (diff_case, additional) = similarity(case_plus, case_minus)
-    (diff_cand, missing) = similarity(case_minus, case_plus)
-    reverse_missing = []
-    for el in sorted(missing):
-        reverse_missing.append(el[::-1])
-    missing = reverse_missing
-    missing = res_tups_to_dicts(missing)
-    additional = res_tups_to_dicts(additional)
-    similar = res_tups_to_dicts(diff_case)
-    return (case_hn, candidate_hn, missing + additional + similar)
+    case_plus = build_diff(case, candidate)
+    case_minus = build_diff(candidate, case)
+    # pprint(case_plus)
+    # pprint(case_minus)
+    # (diff_case, additional) = similarity(case_plus, case_minus)
+    # (diff_cand, missing) = similarity(case_minus, case_plus)
+    # reverse_missing = []
+    # for el in sorted(missing):
+    #     reverse_missing.append(el[::-1])
+    # missing = reverse_missing
+    # missing = res_tups_to_dicts(missing)
+    # additional = res_tups_to_dicts(additional)
+    # similar = res_tups_to_dicts(diff_case)
+    # return (case_hn, candidate_hn, missing + additional + similar)
+    return (case_plus, case_minus)
 
 
-def res_tups_to_dicts(res):
-    dict_list = []
-    for el in res:
-        (first, second) = el
-        if second == []:
-            second = [""]
-        if first == []:
-            first = [""]
-        dict_list.append({"***** Case *****": "\n".join(first), "***** Candidate *****": "\n".join(second)})
-    return dict_list
+# def res_tups_to_dicts(res):
+#     dict_list = []
+#     for el in res:
+#         (first, second) = el
+#         if second == []:
+#             second = [""]
+#         if first == []:
+#             first = [""]
+#         dict_list.append({"***** Case *****": "\n".join(first), "***** Candidate *****": "\n".join(second)})
+#     return dict_list
 
 
-def similarity(first, second):
-    join_plus = ["\n".join(elem) for elem in first]
-    join_minus = ["\n".join(elem) for elem in second]
-    split_plus = [elem.split() for elem in join_plus]
-    split_minus = [elem.split() for elem in join_minus]
-    amber = []
-    red = []
-    for i, p in enumerate(split_plus):
-        high_score = 0
-        lines = None
-        for j, m in enumerate(split_minus):
-            zipped = list(zip(p, m))
-            same = [(a, b) for (a, b) in zipped if a == b]
-            discontiguous_score = float(len(same)) / float(len(zipped))
-            contiguous_score = 0
-            for (a, b) in zipped:
-                if a == b:
-                    contiguous_score += 1
-                else:
-                    break
-            score = discontiguous_score + contiguous_score
-            if score >= high_score:
-                high_score = score
-                if score == 0:
-                    lines = (first[i], [])
-                else:
-                    lines = (score, first[i], second[j])
-        if lines[-1] == []:
-            red.append(lines)
-        else:
-            amber.append(lines)
-    cleaned_amber = []
-    extras = []
-    for el1 in amber:
-        for el2 in amber:
-            if el1 != el2 and el1[2] == el2[2]:
-                if el1[0] > el2[0]:
-                    cleaned_amber.append(tuple(el1[1:]))
-                    extras.append(tuple(el2[1:]))
-                    try:
-                        amber.remove(el1)
-                        amber.remove(el2)
-                    except:
-                        continue
-                else:
-                    cleaned_amber.append(tuple(el2[1:]))
-                    extras.append(tuple(el1[1:]))
-                    try:
-                        amber.remove(el1)
-                        amber.remove(el2)
-                    except:
-                        continue
-    amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
-    red = red + [(a, []) for (a, _) in extras]
-    return (amber, red)
+# def similarity(first, second):
+#     join_plus = ["\n".join(elem) for elem in first]
+#     join_minus = ["\n".join(elem) for elem in second]
+#     split_plus = [elem.split() for elem in join_plus]
+#     split_minus = [elem.split() for elem in join_minus]
+#     amber = []
+#     red = []
+#     for i, p in enumerate(split_plus):
+#         high_score = 0
+#         lines = None
+#         for j, m in enumerate(split_minus):
+#             zipped = list(zip(p, m))
+#             same = [(a, b) for (a, b) in zipped if a == b]
+#             discontiguous_score = float(len(same)) / float(len(zipped))
+#             contiguous_score = 0
+#             for (a, b) in zipped:
+#                 if a == b:
+#                     contiguous_score += 1
+#                 else:
+#                     break
+#             score = discontiguous_score + contiguous_score
+#             if score >= high_score:
+#                 high_score = score
+#                 if score == 0:
+#                     lines = (first[i], [])
+#                 else:
+#                     lines = (score, first[i], second[j])
+#         if lines[-1] == []:
+#             red.append(lines)
+#         else:
+#             amber.append(lines)
+#     cleaned_amber = []
+#     extras = []
+#     for el1 in amber:
+#         for el2 in amber:
+#             if el1 != el2 and el1[2] == el2[2]:
+#                 if el1[0] > el2[0]:
+#                     cleaned_amber.append(tuple(el1[1:]))
+#                     extras.append(tuple(el2[1:]))
+#                     try:
+#                         amber.remove(el1)
+#                         amber.remove(el2)
+#                     except:
+#                         continue
+#                 else:
+#                     cleaned_amber.append(tuple(el2[1:]))
+#                     extras.append(tuple(el1[1:]))
+#                     try:
+#                         amber.remove(el1)
+#                         amber.remove(el2)
+#                     except:
+#                         continue
+#     amber = [(b, c) for (_, b, c) in amber] + cleaned_amber
+#     red = red + [(a, []) for (a, _) in extras]
+#     return (amber, red)
 
 
+def diff_to_csv(tup):
+    return ["\n".join(["\n".join(el) for el in liszt]) for liszt in tup]
 
-def write_to_csv(case, candidate, filename, content):
-    # filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
-    with open(filename, 'a') as csvfile:
-            fieldnames = ["***** Case *****", "***** Candidate *****"]
-            writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerow({"***** Case *****": case, "***** Candidate *****": candidate})
-            writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
-            writer.writerows(content)
-            writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
+
+# def write_to_csv(case, candidate, filename, content):
+#     # filename = os.path.join("diffs", "case-{0}-candidate-{1}.csv".format(case, candidate))
+#     with open(filename, 'a') as csvfile:
+#             fieldnames = ["***** Case *****", "***** Candidate *****"]
+#             writer = csv.DictWriter(csvfile, lineterminator='\n', fieldnames=fieldnames)
+#             writer.writeheader()
+#             writer.writerow({"***** Case *****": case, "***** Candidate *****": candidate})
+#             writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
+#             writer.writerows(content)
+#             writer.writerow({"***** Case *****": "", "***** Candidate *****": ""})
 
 
 # candidate = context_list("./jon_candidate.conf")
@@ -208,13 +212,18 @@ def write_to_csv(case, candidate, filename, content):
 
 anchor_directory = os.path.join(os.getcwd(), "anchor")
 candidate = context_list(os.path.join(anchor_directory, "10.145.63.91.conf"))
-filename = os.path.join(os.getcwd(), "diffs.csv")
+# filename = os.path.join(os.getcwd(), "diffs.csv")
 
-i = 1
-for fin in os.listdir(anchor_directory):
-    print("{0}:\t{1}".format(i, fin))
-    fin = os.path.join(anchor_directory, fin)
-    case = context_list(fin)
-    (comparison, base, content) = diff(candidate, case)
-    write_to_csv(comparison, base, filename, content)
-    i += 1
+with open("diffs.csv", 'ab') as csvfile:
+    csvwriter = csv.writer(csvfile)
+    csvwriter.writerow(["Filename", "Additional", "Missing"])
+    i = 1
+    for fin in os.listdir(anchor_directory):
+        print("{0}:\t{1}".format(i, fin))
+        fn = os.path.join(anchor_directory, fin)
+        case = context_list(fn)
+        # (comparison, base, content) = diff(candidate, case)
+        # write_to_csv(comparison, base, filename, content)
+        content = diff_to_csv(diff(candidate, case))
+        csvwriter.writerow([fin] + content)
+        i += 1
