@@ -2,9 +2,10 @@ cases/
 candidate.txt
 jon*
 diff*.txt
-anchor/
+anchor*/
 diffs/
 diffs.csv
+diffs.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

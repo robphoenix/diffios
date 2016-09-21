@@ -114,16 +114,18 @@ def diff_to_csv(tup):
     return ["\n".join(["\n".join(el) for el in liszt]) for liszt in tup]
 
 anchor_directory = os.path.join(os.getcwd(), "anchor")
-candidate = context_list(os.path.join(anchor_directory, "10.145.63.91.conf"))
+candidate_file = "10.145.63.91.conf"
 
-with open("diffs.csv", 'ab') as csvfile:
-    csvwriter = csv.writer(csvfile)
-    csvwriter.writerow(["Filename", "Additional", "Missing"])
+(candidate_hn, candidate) = context_list(os.path.join(anchor_directory, candidate_file))
+
+with open("diffs.csv", 'a') as csvfile:
+    csvwriter = csv.writer(csvfile, lineterminator='\n')
+    csvwriter.writerow(["Case File", "Case Hostname", "Candidate File", "Additional", "Missing"])
     i = 1
     for fin in os.listdir(anchor_directory):
         print("{0}:\t{1}".format(i, fin))
         fn = os.path.join(anchor_directory, fin)
-        case = context_list(fn)
+        (case_hn, case) = context_list(fn)
         content = diff_to_csv(diff(candidate, case))
-        csvwriter.writerow([fin] + content)
+        csvwriter.writerow([fin, case_hn, candidate_file] + content)
         i += 1
