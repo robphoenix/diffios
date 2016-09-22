@@ -14,109 +14,114 @@ PARTIALS = [
 ]
 
 
-def normalize(config_file):
+def remove_invalid_lines(config_file):
     data = open(config_file).readlines()
     return [line.rstrip() for line in data if valid_line(line)]
 
 
 def valid_line(line):
-    line = line.strip()
-    return len(line) > 0 and not line.startswith("!")
+    lstrip = line.strip()
+    return len(lstrip) > 0 and not lstrip.startswith("!")
 
 
-def group(conf):
-    prev, grouped = [], []
-    for line in conf:
+def group_into_blocks(conf_lines):
+    previous, groups = [], []
+    for i, line in enumerate(conf_lines):
         if line.startswith(" "):
-            prev.append(line)
+            previous.append(line)
         else:
-            grouped.append(prev)
-            prev = [line]
-    return sorted(grouped)[1:]
+            groups.append(previous)
+            previous = [line]
+    return sorted(groups)[1:]
 
 
-def ignore_list(ignore_file):
-    return [elem.strip().lower() for elem in open(ignore_file).readlines()]
+def lines_to_ignore(ignore_file):
+    return [line.strip().lower() for line in open(ignore_file).readlines()]
 
 
-def context_list(config_file, ignore_file=None):
+def fetch_hostname(config_lines):
+    for line in config_lines:
+        if "hostname" in line.lower():
+            return line.split()[1]
+
+
+def partition_ignored_lines(config_file, ignore_file=None):
     if not ignore_file:
         ignore_file = IGNORE_FILE
+    ignore = lines_to_ignore(ignore_file)
+    config_blocks = group_into_blocks(remove_invalid_lines(config_file))
     ignored = []
-    normalized = normalize(config_file)
-    for line in normalized:
-        if "hostname" in line.lower():
-            hostname = line.split()[1]
-            break
-    to_ignore = ignore_list(ignore_file)
-    grouped = group(normalized)
-    for group_index, grp in enumerate(grouped):
-        for line_index, line in enumerate(grp):
-            for ignore in to_ignore:
-                if re.findall(ignore, line.lower()):
-                    if line_index == 0:
-                        ignored.append(grouped[group_index])
-                        grouped[group_index] = []
+    for i, block in enumerate(config_blocks):
+        for j, line in enumerate(block):
+            for line_to_ignore in ignore:
+                if re.findall(line_to_ignore, line.lower()):
+                    if j == 0:
+                        ignored.append(config_blocks[i])
+                        config_blocks[i] = []
                     else:
-                        ignored.append(grp[line_index])
-                        grp[line_index] = ""
-    return (hostname, [line for line in grouped if line])
+                        ignored.append(block[j])
+                        block[j] = ""
+    partitioned = {
+        "ignored": ignored,
+        "recorded": [line for line in config_blocks if line]
+    }
+    return partitioned
 
 
-def sanitise_variables(group):
-    sanitised = []
+def clean_partials(group):
+    cleaned, dirt = [], []
     for line in group:
         for pattern in PARTIALS:
             if re.search(pattern, line):
+                dirt.append(line)
                 line = re.search(pattern, line).group('non_var')
-        sanitised.append(line)
-    return sanitised
+                break
+        cleaned.append(line)
+    return {"cleaned": cleaned, "dirt": dirt}
 
 
-def build_diff(a, b):
-    san_a = [sanitise_variables(line) for line in a if len(line) == 1]
-    san_b = [sanitise_variables(line) for line in b if len(line) == 1]
-    single_a = [line for line in a if len(line) == 1]
-    diff_list = []
-    for index, line in enumerate(san_a):
-        if line not in san_b:
-            diff_list.append(single_a[index])
-    groups_a = [line for line in a if len(line) > 1]
-    groups_b = [line for line in b if len(line) > 1]
-    head = [line[0] for line in groups_b]
-    for a_group in groups_a:
-        first_line = a_group[0]
-        if first_line in head:
-            for b_group in groups_b:
-                if first_line == b_group[0]:
-                    plus = [first_line]
-                    sanitised_a = sanitise_variables(a_group)
-                    sanitised_b = sanitise_variables(b_group)
-                    for index, line in enumerate(sanitised_a):
-                        if line not in sanitised_b:
-                            plus.append(a_group[index])
-                    if len(plus) > 1:
-                        diff_list.append(plus)
+def find_changes(comparison, baseline):
+    comparison_cleaned = [clean_partials(line)["cleaned"] for line in comparison if len(line)]
+    baseline_cleaned = [clean_partials(line)["cleaned"] for line in baseline if len(line)]
+    head = [line[0] for line in baseline_cleaned]
+    changes = []
+    for i, comparison_block in enumerate(comparison_cleaned):
+        if len(comparison_block) == 1:
+            if comparison_block not in baseline_cleaned:
+                changes.append(comparison[i])
         else:
-            sanitised_groups_b = [sanitise_variables(line) for line in groups_b]
-            head = [line[0] for line in sanitised_groups_b]
-            diff_list.append(a_group)
-    return diff_list
+            first_line = comparison_block[0]
+            if first_line in head:
+                for baseline_block in baseline_cleaned:
+                    if first_line == baseline_block[0]:
+                        additional = [first_line]
+                        for j, line in enumerate(comparison_block):
+                            if line not in baseline_block:
+                                additional.append(comparison[i][j])
+                        if len(additional) > 1:
+                            changes.append(additional)
+            else:
+                changes.append(comparison[i])
+    return changes
 
 
 def diff(candidate, case):
-    case_plus = build_diff(case, candidate)
-    case_minus = build_diff(candidate, case)
-    return (case_plus, case_minus)
+    additional = find_changes(case, candidate)
+    missing = find_changes(candidate, case)
+    return (additional, missing)
 
 
-def diff_to_csv(tup):
-    return ["\n".join(["\n".join(el) for el in liszt]) for liszt in tup]
+def diff_to_csv_format(changes):
+    return ["\n".join(["\n".join(l) for l in c]) for c in changes]
 
-anchor_directory = os.path.join(os.getcwd(), "anchor")
-candidate_file = "10.145.63.91.conf"
+anchor_directory = os.path.join(os.getcwd(), "anchor_small")
+candidate_filename = "10.145.63.91.conf"
+candidate_file = os.path.join(anchor_directory, candidate_filename)
 
-(candidate_hn, candidate) = context_list(os.path.join(anchor_directory, candidate_file))
+partitioned_candidate_file = partition_ignored_lines(candidate_file)
+candidate = partitioned_candidate_file['recorded']
+candidate_ignored = partitioned_candidate_file['ignored']
+candidate_hn = fetch_hostname(remove_invalid_lines(candidate_file))
 
 with open("diffs.csv", 'a') as csvfile:
     csvwriter = csv.writer(csvfile, lineterminator='\n')
@@ -124,8 +129,11 @@ with open("diffs.csv", 'a') as csvfile:
     i = 1
     for fin in os.listdir(anchor_directory):
         print("{0}:\t{1}".format(i, fin))
-        fn = os.path.join(anchor_directory, fin)
-        (case_hn, case) = context_list(fn)
-        content = diff_to_csv(diff(candidate, case))
-        csvwriter.writerow([fin, case_hn, candidate_file] + content)
+        case_file = os.path.join(anchor_directory, fin)
+        partitioned_case_file = partition_ignored_lines(case_file)
+        case = partitioned_case_file['recorded']
+        case_ignored = partitioned_case_file['ignored']
+        case_hn = fetch_hostname(remove_invalid_lines(case_file))
+        content = diff_to_csv_format(diff(candidate, case))
+        csvwriter.writerow([fin, case_hn, candidate_filename] + content)
         i += 1
