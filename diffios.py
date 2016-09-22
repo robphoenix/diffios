@@ -102,7 +102,7 @@ def find_changes(comparison, baseline):
                             changes.append(additional)
             else:
                 changes.append(comparison[i])
-    return changes
+    return sorted(changes)
 
 
 def diff(candidate, case):
@@ -114,7 +114,7 @@ def diff(candidate, case):
 def diff_to_csv_format(changes):
     return ["\n".join(["\n".join(l) for l in c]) for c in changes]
 
-anchor_directory = os.path.join(os.getcwd(), "anchor_small")
+anchor_directory = os.path.join(os.getcwd(), "anchor")
 candidate_filename = "10.145.63.91.conf"
 candidate_file = os.path.join(anchor_directory, candidate_filename)
 

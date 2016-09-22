@@ -5,7 +5,7 @@ diff*.txt
 anchor*/
 diffs/
 diffs.csv
-diffs.xlsx
+*.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
