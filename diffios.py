@@ -81,8 +81,8 @@ def clean_partials(group):
 
 
 def find_changes(comparison, baseline):
-    comparison_cleaned = [clean_partials(line)["cleaned"] for line in comparison if len(line)]
-    baseline_cleaned = [clean_partials(line)["cleaned"] for line in baseline if len(line)]
+    comparison_cleaned = [clean_partials(l)["cleaned"] for l in comparison if len(l)]
+    baseline_cleaned = [clean_partials(l)["cleaned"] for l in baseline if len(l)]
     head = [line[0] for line in baseline_cleaned]
     changes = []
     for i, comparison_block in enumerate(comparison_cleaned):
@@ -92,14 +92,13 @@ def find_changes(comparison, baseline):
         else:
             first_line = comparison_block[0]
             if first_line in head:
-                for baseline_block in baseline_cleaned:
-                    if first_line == baseline_block[0]:
-                        additional = [first_line]
-                        for j, line in enumerate(comparison_block):
-                            if line not in baseline_block:
-                                additional.append(comparison[i][j])
-                        if len(additional) > 1:
-                            changes.append(additional)
+                baseline_block = baseline_cleaned[head.index(first_line)]
+                additional = [first_line]
+                for j, line in enumerate(comparison_block):
+                    if line not in baseline_block:
+                        additional.append(comparison[i][j])
+                if len(additional) > 1:
+                    changes.append(additional)
             else:
                 changes.append(comparison[i])
     return sorted(changes)
@@ -125,7 +124,9 @@ candidate_hn = fetch_hostname(remove_invalid_lines(candidate_file))
 
 with open("diffs.csv", 'a') as csvfile:
     csvwriter = csv.writer(csvfile, lineterminator='\n')
-    csvwriter.writerow(["Case File", "Case Hostname", "Candidate File", "Additional", "Missing"])
+    csvwriter.writerow([
+        "Case File", "Case Hostname", "Candidate File", "Additional", "Missing"
+    ])
     i = 1
     for fin in os.listdir(anchor_directory):
         print("{0}:\t{1}".format(i, fin))
