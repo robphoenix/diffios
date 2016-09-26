@@ -17,9 +17,9 @@ class DiffiosFile(object):
 
     def __init__(self, config_filename, ignore_filename=None):
         if ignore_filename is None:
-            ignore_filename = "../diffios_ignore"
+            ignore_filename = os.path.abspath("../diffios_ignore")
         self.ignore_filename = ignore_filename
-        self.config_filename = config_filename
+        self.config_filename = os.path.abspath(config_filename)
         self.config_lines = self._file_lines(self.config_filename)
 
     def _file_lines(self, fin):
