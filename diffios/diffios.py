@@ -21,6 +21,7 @@ class DiffiosFile(object):
         self.ignore_filename = ignore_filename
         self.config_filename = os.path.abspath(config_filename)
         self.config_lines = self._file_lines(self.config_filename)
+        self.blocks = self._group_into_blocks(self._remove_invalid_lines())
 
     def _file_lines(self, fin):
         with open(fin) as cf:
@@ -33,7 +34,7 @@ class DiffiosFile(object):
         lstrip = line.strip()
         return len(lstrip) > 0 and not lstrip.startswith("!")
 
-    def group_into_blocks(self, conf_lines):
+    def _group_into_blocks(self, conf_lines):
         previous, groups = [], []
         for i, line in enumerate(conf_lines):
             if line.startswith(" "):
@@ -43,19 +44,19 @@ class DiffiosFile(object):
                 previous = [line]
         return sorted(groups)[1:]
 
-    def lines_to_ignore(self):
-        ignore_lines = self._file_lines(self.ignore_filename)
-        return [line.strip().lower() for line in ignore_lines]
-
     def hostname(self):
         for line in self.config_lines:
             if "hostname" in line.lower():
                 return line.split()[1]
 
-    def partition_ignored_lines(self):
-        ignore = self.lines_to_ignore()
-        ignored_removed = self._remove_invalid_lines()
-        config_blocks = self.group_into_blocks(ignored_removed)
+    def ignore(self):
+        ignore_lines = self._file_lines(self.ignore_filename)
+        return [line.strip().lower() for line in ignore_lines]
+
+    def partition(self):
+        ignore = self.ignore()
+        ignore_removed = self._remove_invalid_lines()
+        config_blocks = self._group_into_blocks(ignore_removed)
         ignored = []
         for i, block in enumerate(config_blocks):
             for j, line in enumerate(block):
@@ -73,11 +74,11 @@ class DiffiosFile(object):
         }
         return partitioned
 
-    def ignored_lines(self):
-        return self.partition_ignored_lines()["ignored"]
+    def dirty(self):
+        return self.partition()["ignored"]
 
-    def recorded_lines(self):
-        return self.partition_ignored_lines()["recorded"]
+    def cleaned(self):
+        return self.partition()["recorded"]
 
 
 # class DiffiosDiff(object):
