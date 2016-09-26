@@ -1,7 +1,9 @@
 import os
 import sys
+
 sys.path.append(os.path.abspath("../diffios"))
 from diffios import DiffiosFile
+from blocks import candidate_blocks, case_blocks
 
 
 configs_dir = os.path.abspath("./configs/")
@@ -27,4 +29,10 @@ def test_hostname():
         "CASE01",
     ]
     actual = [df.hostname() for df in dfs]
+    assert actual == expected
+
+
+def test_blocks():
+    expected = [candidate_blocks(), case_blocks()]
+    actual = [df.blocks for df in dfs]
     assert actual == expected
