@@ -22,6 +22,7 @@ class DiffiosFile(object):
         self.config_filename = os.path.abspath(config_filename)
         self.config_lines = self._file_lines(self.config_filename)
         self.blocks = self._group_into_blocks(self._remove_invalid_lines())
+        self.hostname = self._hostname()
 
     def _file_lines(self, fin):
         with open(fin) as cf:
@@ -44,7 +45,7 @@ class DiffiosFile(object):
                 previous = [line]
         return sorted(groups)[1:]
 
-    def hostname(self):
+    def _hostname(self):
         for line in self.config_lines:
             if "hostname" in line.lower():
                 return line.split()[1]

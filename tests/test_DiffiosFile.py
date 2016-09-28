@@ -35,7 +35,7 @@ def test_hostname():
         "CANDIDATE01",
         "CASE01",
     ]
-    actual = [df.hostname() for df in dfs]
+    actual = [df.hostname for df in dfs]
     assert actual == expected
 
 
