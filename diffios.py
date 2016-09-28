@@ -5,7 +5,6 @@ import csv
 from pprint import pprint
 
 
-
 PARTIALS = [
     "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
     "^(?P<non_var> description ).+",
@@ -20,7 +19,7 @@ class DiffiosFile(object):
     def __init__(self, config_filename, ignore_filename=None):
         if ignore_filename is None:
             ignore_filename = os.path.abspath("diffios_ignore")
-            # TODO: confirm presence of ignore_file
+            # TODO: confirm presence of files
         self.ignore_filename = ignore_filename
         self.config_filename = os.path.abspath(config_filename)
         self.config_lines = self._file_lines(self.config_filename)
@@ -86,12 +85,18 @@ class DiffiosFile(object):
 class DiffiosDiff(object):
 
     def __init__(self, baseline, comparison):
+        # TODO: make it so DiffiosFile objects can be passed in also
+        # TODO: confirm existence of files
         self.baseline = DiffiosFile(baseline)
         self.comparison = DiffiosFile(comparison)
         self.translated_comparison = self._translated(self.comparison)
         self.translated_baseline = self._translated(self.baseline)
         self.original_comparison = self._original(self.comparison)
         self.original_baseline = self._original(self.baseline)
+        self.additional = self._find_changes(
+            self.translated_comparison, self.translated_baseline)
+        self.missing = self._find_changes(
+            self.translated_baseline, self.translated_comparison)
 
     def _translate_partials(self, block):
         Partials = namedtuple("Partials", "translated originals")
@@ -120,44 +125,30 @@ class DiffiosDiff(object):
                 originals.append(original)
         return originals
 
-    # def find_changes(comparison, baseline):
-        # comparison_cleaned = [clean_partials(l)["cleaned"] for l in comparison if len(l)]
-        # baseline_cleaned = [clean_partials(l)["cleaned"] for l in baseline if len(l)]
-        # head = [line[0] for line in baseline_cleaned]
-        # changes = []
-        # for i, comparison_block in enumerate(comparison_cleaned):
-            # if len(comparison_block) == 1:
-                # if comparison_block not in baseline_cleaned:
-                    # changes.append(comparison[i])
-            # else:
-                # first_line = comparison_block[0]
-                # if first_line in head:
-                    # baseline_block = baseline_cleaned[head.index(first_line)]
-                    # additional = [first_line]
-                    # for j, line in enumerate(comparison_block):
-                        # if line not in baseline_block:
-                            # additional.append(comparison[i][j])
-                    # if len(additional) > 1:
-                        # changes.append(additional)
-                # else:
-                    # changes.append(comparison[i])
-        # return sorted(changes)
+    def _find_changes(self, dynamic, static):
+        head = [line[0] for line in static]
+        changes = []
+        for dynamic_index, dynamic_block in enumerate(dynamic):
+            if len(dynamic_block) == 1:
+                if dynamic_block not in static:
+                    changes.append(dynamic[dynamic_index])
+            else:
+                first_line = dynamic_block[0]
+                if first_line in head:
+                    static_block = static[head.index(first_line)]
+                    additional = [first_line]
+                    for dynamic_block_index, line in enumerate(dynamic_block):
+                        if line not in static_block:
+                            additional.append(
+                                dynamic[dynamic_index][dynamic_block_index])
+                    if len(additional) > 1:
+                        changes.append(additional)
+                else:
+                    changes.append(dynamic[dynamic_index])
+        return sorted(changes)
 
 
-    # def diff(candidate, case):
-        # additional = find_changes(case, candidate)
-        # missing = find_changes(candidate, case)
-        # return (additional, missing)
-
-
-    # def diff_to_csv_format(changes):
-        # return ["\n".join(["\n".join(l) for l in c]) for c in changes]
-
-
-
-
-
-
+# def diffios_diff_to_csv():
 # anchor_directory = os.path.join(os.getcwd(), "anchor")
 # candidate_filename = "10.145.63.91.conf"
 # candidate_file = os.path.join(anchor_directory, candidate_filename)
