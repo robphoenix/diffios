@@ -60,3 +60,15 @@ def test_partition():
     expected = candidate_partition()
     actual = df.partition()
     assert actual == expected
+
+
+def test_dirty():
+    expected = candidate_partition()["ignored"]
+    actual = df.dirty()
+    assert actual == expected
+
+
+def test_cleaned():
+    expected = candidate_partition()["recorded"]
+    actual = df.cleaned()
+    assert actual == expected
