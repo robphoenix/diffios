@@ -88,21 +88,37 @@ class DiffiosDiff(object):
     def __init__(self, baseline, comparison):
         self.baseline = DiffiosFile(baseline)
         self.comparison = DiffiosFile(comparison)
-        self.clean_comparison = [clean_partials(l)["cleaned"] for l in self.comparison.cleaned() if len(l)]
+        self.translated_comparison = self._translated(self.comparison)
+        self.translated_baseline = self._translated(self.baseline)
+        self.original_comparison = self._original(self.comparison)
+        self.original_baseline = self._original(self.baseline)
 
-    def _translate_partials(self, config):
-        cleaned, dirt = [], []
+    def _translate_partials(self, block):
+        Partials = namedtuple("Partials", "translated originals")
+        translated, original = [], [block[0]]
         for line in block:
             for pattern in PARTIALS:
                 if re.search(pattern, line):
-                    dirt.append(line)
+                    original.append(line)
                     line = re.search(pattern, line).group('non_var')
                     break
-            cleaned.append(line)
-        return {"cleaned": cleaned, "dirt": dirt}
+            translated.append(line)
+        if len(original) == 1:
+            original = ()
+        if len(original) == 2:
+            original = set(original)
+        return Partials(translated, tuple(original))
 
-    # def matched_partials(self):
+    def _translated(self, df):
+        return [self._translate_partials(b).translated for b in df.recorded()]
 
+    def _original(self, df):
+        originals = []
+        for block in df.recorded():
+            original = self._translate_partials(block).originals
+            if original:
+                originals.append(original)
+        return originals
 
     # def find_changes(comparison, baseline):
         # comparison_cleaned = [clean_partials(l)["cleaned"] for l in comparison if len(l)]
