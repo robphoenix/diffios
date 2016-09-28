@@ -25,8 +25,8 @@ class DiffiosFile(object):
         self.hostname = self._hostname()
 
     def _file_lines(self, fin):
-        with open(fin) as cf:
-            return cf.readlines()
+        with open(fin) as fl:
+            return fl.readlines()
 
     def _remove_invalid_lines(self):
         return [l.rstrip() for l in self.config_lines if self._valid_line(l)]

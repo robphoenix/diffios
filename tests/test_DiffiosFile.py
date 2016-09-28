@@ -43,3 +43,9 @@ def test_blocks():
     expected = [candidate_blocks(), case_blocks()]
     actual = [df.blocks for df in dfs]
     assert actual == expected
+
+
+def test_config_lines():
+    expected = [open(c).readlines() for c in configs]
+    actual = [df.config_lines for df in dfs]
+    assert actual == expected
