@@ -4,7 +4,7 @@ import sys
 
 sys.path.append(os.path.abspath("../diffios"))
 from diffios import DiffiosFile
-from blocks import candidate_blocks
+from utils import candidate_blocks, candidate_partition
 
 
 configs_dir = os.path.abspath("./configs/")
@@ -53,4 +53,10 @@ def test_ignore():
     ignore_file = open("../diffios_ignore").readlines()
     expected = [l.strip().lower() for l in ignore_file]
     actual = df.ignore()
+    assert actual == expected
+
+
+def test_partition():
+    expected = candidate_partition()
+    actual = df.partition()
     assert actual == expected
