@@ -83,22 +83,23 @@ class DiffiosFile(object):
         return self.partition()["recorded"]
 
 
-# class DiffiosDiff(object):
+class DiffiosDiff(object):
 
-    # def __init__(self, baseline, comparison):
-        # self.baseline = baseline
-        # self.comparison = comparison
+    def __init__(self, baseline, comparison):
+        self.baseline = DiffiosFile(baseline)
+        self.comparison = DiffiosFile(comparison)
+        self.clean_comparison = [clean_partials(l)["cleaned"] for l in self.comparison.cleaned() if len(l)]
 
-    # def clean_partials(self, block):
-        # cleaned, dirt = [], []
-        # for line in block:
-            # for pattern in PARTIALS:
-                # if re.search(pattern, line):
-                    # dirt.append(line)
-                    # line = re.search(pattern, line).group('non_var')
-                    # break
-            # cleaned.append(line)
-        # return {"cleaned": cleaned, "dirt": dirt}
+    def _clean_partials(self, config):
+        cleaned, dirt = [], []
+        for line in block:
+            for pattern in PARTIALS:
+                if re.search(pattern, line):
+                    dirt.append(line)
+                    line = re.search(pattern, line).group('non_var')
+                    break
+            cleaned.append(line)
+        return {"cleaned": cleaned, "dirt": dirt}
 
     # def matched_partials(self):
 
