@@ -17,6 +17,13 @@ def test_default_ignore_filename():
     assert actual == expected
 
 
+def test_alt_ignore_filename():
+    d = DiffiosFile(os.path.join(configs_dir, "candidate.conf"), "alt_ignore_file")
+    expected = "alt_ignore_file"
+    actual = d.ignore_filename
+    assert actual == expected
+
+
 def test_config_filename():
     actual = configs
     expected = [df.config_filename for df in dfs]
