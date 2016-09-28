@@ -1,3 +1,9 @@
+from collections import namedtuple
+
+
+Partition = namedtuple("Partition", "ignored recorded")
+
+
 def baseline_blocks():
     bb = [['#                                                                             #'],
           ['#                                                                             #'],
@@ -644,8 +650,7 @@ def baseline_blocks():
 
 
 def baseline_partition():
-    bp = {
-        'ignored': [' server name xxxxxx12345',
+    bp = Partition(ignored=[' server name xxxxxx12345',
                     ' server name yyyyyy67890',
                     ['banner login ^C'],
                     ['banner motd ^C'],
@@ -663,7 +668,7 @@ def baseline_partition():
                 ' revocation-check none',
                 ' rsakeypair TP-self-signed-1234567890'],
                 ['hostname BASELINE01']],
-    'recorded': [['#                                                                             '
+    recorded=[['#                                                                             '
                 '#'],
                 ['#                                                                             '
                 '#'],
@@ -1330,5 +1335,5 @@ def baseline_partition():
                 ['vlan 778', ' name native'],
                 ['vlan internal allocation policy ascending'],
                 ['vtp domain diffios'],
-                ['vtp mode transparent']]}
+                ['vtp mode transparent']])
     return bp

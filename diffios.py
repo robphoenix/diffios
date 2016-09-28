@@ -1,7 +1,9 @@
 import re
 import os
+from collections import namedtuple
 import csv
 from pprint import pprint
+
 
 
 PARTIALS = [
@@ -17,7 +19,7 @@ class DiffiosFile(object):
 
     def __init__(self, config_filename, ignore_filename=None):
         if ignore_filename is None:
-            ignore_filename = os.path.abspath("../diffios_ignore")
+            ignore_filename = os.path.abspath("diffios_ignore")
             # TODO: confirm presence of ignore_file
         self.ignore_filename = ignore_filename
         self.config_filename = os.path.abspath(config_filename)
@@ -51,12 +53,13 @@ class DiffiosFile(object):
             if "hostname" in line.lower():
                 return line.split()[1]
 
-    def ignore(self):
-        ignore_lines = self._file_lines(self.ignore_filename)
-        return [line.strip().lower() for line in ignore_lines]
+    def ignore_lines(self):
+        il = self._file_lines(self.ignore_filename)
+        return [line.strip().lower() for line in il]
 
     def partition(self):
-        ignore = self.ignore()
+        Partition = namedtuple("Partition", "ignored recorded")
+        ignore = self.ignore_lines()
         ignore_removed = self._remove_invalid_lines()
         config_blocks = self._group_into_blocks(ignore_removed)
         ignored = []
@@ -70,17 +73,14 @@ class DiffiosFile(object):
                         else:
                             ignored.append(block[j])
                             block[j] = ""
-        partitioned = {
-            "ignored": ignored,
-            "recorded": [line for line in config_blocks if line]
-        }
-        return partitioned
+        p = Partition(ignored, [line for line in config_blocks if line])
+        return p
 
-    def dirty(self):
-        return self.partition()["ignored"]
+    def ignored(self):
+        return self.partition().ignored
 
-    def cleaned(self):
-        return self.partition()["recorded"]
+    def recorded(self):
+        return self.partition().recorded
 
 
 class DiffiosDiff(object):
@@ -90,7 +90,7 @@ class DiffiosDiff(object):
         self.comparison = DiffiosFile(comparison)
         self.clean_comparison = [clean_partials(l)["cleaned"] for l in self.comparison.cleaned() if len(l)]
 
-    def _clean_partials(self, config):
+    def _translate_partials(self, config):
         cleaned, dirt = [], []
         for line in block:
             for pattern in PARTIALS:
