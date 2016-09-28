@@ -1,5 +1,5 @@
-def candidate_blocks():
-    cb = [['#                                                                             #'],
+def baseline_blocks():
+    bb = [['#                                                                             #'],
           ['#                                                                             #'],
           ['#                                                                             #'],
           ['#                                   WARNING!!!                                #'],
@@ -106,7 +106,7 @@ def candidate_blocks():
           ['errdisable recovery cause storm-control'],
           ['errdisable recovery cause udld'],
           ['errdisable recovery cause vmps'],
-          ['hostname CANDIDATE01'],
+          ['hostname BASELINE01'],
           ['interface FastEthernet0/1',
            ' description Management',
            ' switchport trunk native vlan 777',
@@ -640,11 +640,11 @@ def candidate_blocks():
           ['vlan internal allocation policy ascending'],
           ['vtp domain diffios'],
           ['vtp mode transparent']]
-    return cb
+    return bb
 
 
-def candidate_partition():
-    cp = {
+def baseline_partition():
+    bp = {
         'ignored': [' server name xxxxxx12345',
                     ' server name yyyyyy67890',
                     ['banner login ^C'],
@@ -662,7 +662,7 @@ def candidate_partition():
                 ' subject-name cn=IOS-Self-Signed-Certificate-1234567890',
                 ' revocation-check none',
                 ' rsakeypair TP-self-signed-1234567890'],
-                ['hostname CANDIDATE01']],
+                ['hostname BASELINE01']],
     'recorded': [['#                                                                             '
                 '#'],
                 ['#                                                                             '
@@ -1331,4 +1331,4 @@ def candidate_partition():
                 ['vlan internal allocation policy ascending'],
                 ['vtp domain diffios'],
                 ['vtp mode transparent']]}
-    return cp
+    return bp

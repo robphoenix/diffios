@@ -4,11 +4,11 @@ import sys
 
 sys.path.append(os.path.abspath("../diffios"))
 from diffios import DiffiosFile
-from utils import candidate_blocks, candidate_partition
+from utils import baseline_blocks, baseline_partition
 
 
 configs_dir = os.path.abspath("./configs/")
-config = os.path.join(configs_dir, "candidate.conf")
+config = os.path.join(configs_dir, "baseline.conf")
 df = DiffiosFile(config)
 
 
@@ -38,13 +38,13 @@ def test_config_lines():
 
 
 def test_hostname():
-    expected = "CANDIDATE01"
+    expected = "BASELINE01"
     actual = df.hostname
     assert actual == expected
 
 
 def test_blocks():
-    expected = candidate_blocks()
+    expected = baseline_blocks()
     actual = df.blocks
     assert actual == expected
 
@@ -57,18 +57,18 @@ def test_ignore():
 
 
 def test_partition():
-    expected = candidate_partition()
+    expected = baseline_partition()
     actual = df.partition()
     assert actual == expected
 
 
 def test_dirty():
-    expected = candidate_partition()["ignored"]
+    expected = baseline_partition()["ignored"]
     actual = df.dirty()
     assert actual == expected
 
 
 def test_cleaned():
-    expected = candidate_partition()["recorded"]
+    expected = baseline_partition()["recorded"]
     actual = df.cleaned()
     assert actual == expected

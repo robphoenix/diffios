@@ -85,13 +85,13 @@ class DiffiosFile(object):
 
 # class DiffiosDiff(object):
 
-    # def __init__(self, baseline_file, comparison_file):
-        # self.config_file = config_file
-        # self.ignore_file = ignore_file
+    # def __init__(self, baseline, comparison):
+        # self.baseline = baseline
+        # self.comparison = comparison
 
-    # def clean_partials(group):
+    # def clean_partials(self, block):
         # cleaned, dirt = [], []
-        # for line in group:
+        # for line in block:
             # for pattern in PARTIALS:
                 # if re.search(pattern, line):
                     # dirt.append(line)
@@ -99,6 +99,9 @@ class DiffiosFile(object):
                     # break
             # cleaned.append(line)
         # return {"cleaned": cleaned, "dirt": dirt}
+
+    # def matched_partials(self):
+
 
     # def find_changes(comparison, baseline):
         # comparison_cleaned = [clean_partials(l)["cleaned"] for l in comparison if len(l)]
