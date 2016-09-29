@@ -1,4 +1,5 @@
 import re
+
 import os
 from collections import namedtuple
 import csv
