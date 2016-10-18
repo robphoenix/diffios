@@ -1,9 +1,8 @@
 import re
-
 import os
 from collections import namedtuple
-import csv
-from pprint import pprint
+# import csv
+# from pprint import pprint
 
 
 PARTIALS = [
