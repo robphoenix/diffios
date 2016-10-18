@@ -4,7 +4,7 @@ import unittest
 
 sys.path.append(os.path.abspath("."))
 from diffios import DiffiosFile
-from test_utils import baseline_blocks, baseline_partition
+from utils import baseline_blocks, baseline_partition
 
 
 class DiffiosFileTest(unittest.TestCase):
