@@ -1,3 +1,4 @@
+#pragma: no cover
 from collections import namedtuple
 
 
