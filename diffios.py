@@ -146,5 +146,3 @@ class DiffiosDiff(object):
                 else:
                     changes.append(dynamic[dynamic_index])
         return sorted(changes)
-
-
