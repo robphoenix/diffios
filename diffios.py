@@ -84,7 +84,7 @@ class DiffiosFile(object):
 
 class DiffiosDiff(object):
 
-    def __init__(self, baseline, comparison):
+    def __init__(self, baseline=None, comparison=None):
         # TODO: make it so DiffiosFile objects can be passed in also
         # TODO: confirm existence of files
         self.baseline = DiffiosFile(baseline)

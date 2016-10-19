@@ -1,6 +1,6 @@
 import os
 
-files_dir = os.path.join(os.getcwd(), "anchor")
+files_dir = os.path.join(os.getcwd(), "jon_comparison")
 
 
 for config_file in os.listdir(files_dir):
