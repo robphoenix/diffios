@@ -1,11 +1,7 @@
-cases/
-candidate.txt
-jon*
-diff*.txt
-anchor*/
-diffs/
-diffs.csv
-*.xlsx
+# non-sanitised configs etc.
+/priv/*
+!/priv/.gitkeep
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,12 +4,12 @@ import csv
 from diffios import DiffiosFile
 from diffios import DiffiosDiff
 
-comparison_dir = os.path.join(os.getcwd(), "jon_comparison")
+comparison_dir = os.path.join(os.getcwd(), "priv", "jon_comparison")
 baseline_filename = "jon_baseline.conf"
-baseline_file = os.path.join(os.getcwd(), baseline_filename)
+baseline_file = os.path.join(os.getcwd(), "priv", baseline_filename)
 baseline_diff_file = DiffiosFile(baseline_file)
 
-with open(os.path.join(os.getcwd(), "diffs.csv"), 'a') as csvfile:
+with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'a') as csvfile:
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow([
         "Comparison File",
