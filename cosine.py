@@ -5,10 +5,10 @@ from collections import Counter
 WORD = re.compile(r'\w+')
 
 def get_cosine(vec1, vec2):
-    print vec1
+    print(vec1)
     intersection = set(vec1.keys()) & set(vec2.keys())
     numerator = sum([vec1[x] * vec2[x] for x in intersection])
-    print intersection
+    print(intersection)
 
     sum1 = sum([vec1[x]**2 for x in vec1.keys()])
     sum2 = sum([vec2[x]**2 for x in vec2.keys()])
@@ -31,4 +31,4 @@ vector2 = text_to_vector(text2)
 
 cosine = get_cosine(vector1, vector2)
 
-print 'Cosine:', cosine
+print('Cosine:', cosine)

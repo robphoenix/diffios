@@ -1,0 +1,2 @@
+[run]
+omit=tests/*,remove_lines.py
