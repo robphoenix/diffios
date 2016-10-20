@@ -1,2 +1,2 @@
 [run]
-omit=tests/*,remove_lines.py
+omit=tests/*,remove_lines.py,cosine.py,run_diffios.py
