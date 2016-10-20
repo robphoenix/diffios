@@ -18,15 +18,16 @@ with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
         "Missing"
     ])
     i = 1
-    for fin in sorted(os.listdir(COMPARISON_DIR)):
+    files = sorted(os.listdir(COMPARISON_DIR))
+    for fin in files:
         comparison_file = os.path.join(COMPARISON_DIR, fin)
         diff = DiffiosDiff(
             baseline=BASELINE_FILE,
             comparison=comparison_file,
             ignore_file=IGNORE_FILE
         )
-        print("{0}: Comparing {1} against {2}".format(
-            i, fin, os.path.basename(diff.baseline.config_filename)))
+        print("{0} of {1}: {2} => {3}".format(
+            i, len(files), fin, os.path.basename(diff.baseline.config_filename)))
         csvwriter.writerow([
             os.path.basename(diff.comparison.config_filename),
             diff.comparison.hostname,
