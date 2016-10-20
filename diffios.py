@@ -144,7 +144,7 @@ class DiffiosDiff(object):
                             index = translated.translated.index(line)
                             translation = translated.original[index]
                             translated_change.append(translation)
-                        else:
+                        elif line not in translated_change:
                             translated_change.append(line)
                 elif change[0] == translated.translated:
                     translated_change.append(translated.original)
