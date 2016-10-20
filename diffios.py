@@ -90,14 +90,17 @@ class DiffiosDiff(object):
         self.baseline = DiffiosFile(baseline, ignore_file)
         self.comparison = DiffiosFile(comparison, ignore_file)
         self.partials = PARTIALS
-        # self.additional = self._find_changes(
-            # self.translated_comparison, self.translated_baseline)
-        # self.missing = self._find_changes(
-            # self.translated_baseline, self.translated_comparison)
+        self.additional = self._find_changes(
+            self._translated(self.comparison.recorded()),
+            self._translated(self.baseline.recorded()))
+        self.missing = self._find_changes(
+            self._translated(self.baseline.recorded()),
+            self._translated(self.comparison.recorded()))
 
     def _translate_block(self, block):
-        Partials = namedtuple("Partials", "parent original translated")
+        Partials = namedtuple("Partials", "parent original translated block")
         parent, original, translated = block[0], [], []
+        post_translation_block = []
         for i, line in enumerate(block):
             match = None
             for pattern in self.partials:
@@ -106,32 +109,50 @@ class DiffiosDiff(object):
             if match:
                 translated.append(match)
                 original.append(line)
+                post_translation_block.append(match)
+            else:
+                post_translation_block.append(line)
         translation = None
         if original != translated:
-            translation = Partials(parent, original, translated)
+            translation = Partials(
+                parent,
+                original,
+                translated,
+                post_translation_block)
         return translation
 
     def _translation(self, data):
-        return [self._translate_block(b) for b in data if self._translate_block(b)]
+        return [self._translate_block(d) for d in data if self._translate_block(d)]
 
-    # def _find_changes(self, dynamic, static):
-        # head = [line[0] for line in static]
-        # changes = []
-        # for dynamic_index, dynamic_block in enumerate(dynamic):
-            # if len(dynamic_block) == 1:
-                # if dynamic_block not in static:
-                    # changes.append(dynamic[dynamic_index])
-            # else:
-                # first_line = dynamic_block[0]
-                # if first_line in head:
-                    # static_block = static[head.index(first_line)]
-                    # additional = [first_line]
-                    # for dynamic_block_index, line in enumerate(dynamic_block):
-                        # if line not in static_block:
-                            # additional.append(
-                                # dynamic[dynamic_index][dynamic_block_index])
-                    # if len(additional) > 1:
-                        # changes.append(additional)
-                # else:
-                    # changes.append(dynamic[dynamic_index])
-        # return sorted(changes)
+    def _translated(self, data):
+        translated = []
+        for block in data:
+            translation = self._translate_block(block)
+            if translation:
+                translated.append(translation.block)
+            else:
+                translated.append(block)
+        return translated
+
+    def _find_changes(self, dynamic, static):
+        # translation = self._translation(dynamic)
+        head = [line[0] for line in static]
+        changes = []
+        for dynamic_index, dynamic_block in enumerate(dynamic):
+            if len(dynamic_block) == 1:
+                if dynamic_block not in static:
+                    changes.append(dynamic[dynamic_index])
+            else:
+                first_line = dynamic_block[0]
+                if first_line in head:
+                    static_block = static[head.index(first_line)]
+                    additional = [first_line]
+                    for dynamic_block_index, line in enumerate(dynamic_block):
+                        if line not in static_block:
+                            additional.append(
+                                dynamic[dynamic_index][dynamic_block_index])
+                    if len(additional) > 1:
+                        changes.append(additional)
+                else:
+                    changes.append(dynamic[dynamic_index])
+        return sorted(changes)
