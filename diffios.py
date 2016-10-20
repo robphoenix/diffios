@@ -89,68 +89,49 @@ class DiffiosDiff(object):
         # TODO: confirm existence of files
         self.baseline = DiffiosFile(baseline, ignore_file)
         self.comparison = DiffiosFile(comparison, ignore_file)
-        # self.translated_comparison = self._translated(self.comparison)
-        # self.translated_baseline = self._translated(self.baseline)
-        # self.original_comparison = self._original(self.comparison)
-        # self.original_baseline = self._original(self.baseline)
+        self.partials = PARTIALS
         # self.additional = self._find_changes(
-        #     self.translated_comparison, self.translated_baseline)
+            # self.translated_comparison, self.translated_baseline)
         # self.missing = self._find_changes(
-        #     self.translated_baseline, self.translated_comparison)
+            # self.translated_baseline, self.translated_comparison)
 
-    def _translate_partials(self, block):
-        Partials = namedtuple("Partials", "translated original")
-        # translated, original = [], [block[0]]
-        translation = {}
-        translated = ""
-        for line in block:
-            for pattern in PARTIALS:
+    def _translate_block(self, block):
+        Partials = namedtuple("Partials", "parent original translated")
+        parent, original, translated = block[0], [], []
+        for i, line in enumerate(block):
+            match = None
+            for pattern in self.partials:
                 if re.search(pattern, line):
-                    translated = re.search(pattern, line).group('non_var')
-                    translation[line] = translated
-                    # translated = re.search(pattern, line).group('non_var')
-                    # translation[line] = translated
+                    match = re.search(pattern, line).group('non_var')
+            if match:
+                translated.append(match)
+                original.append(line)
+        translation = None
+        if original != translated:
+            translation = Partials(parent, original, translated)
         return translation
-        #
-        #     translated.append(line)
-        # if len(original) == 1:
-        #     original = ()
-        # if len(original) == 2:
-        #     original = set(original)
-        # return Partials(translated, tuple(original))
 
-    def translate(self):
-        return [self._translate_partials(b) for b in self.comparison.recorded()]
+    def _translation(self, data):
+        return [self._translate_block(b) for b in data if self._translate_block(b)]
 
-    # def _translated(self, df):
-    #     return [self._translate_partials(b).translated for b in df.recorded()]
-    #
-    # def _original(self, df):
-    #     originals = []
-    #     for block in df.recorded():
-    #         original = self._translate_partials(block).originals
-    #         if original:
-    #             originals.append(original)
-    #     return originals
-    #
     # def _find_changes(self, dynamic, static):
-    #     head = [line[0] for line in static]
-    #     changes = []
-    #     for dynamic_index, dynamic_block in enumerate(dynamic):
-    #         if len(dynamic_block) == 1:
-    #             if dynamic_block not in static:
-    #                 changes.append(dynamic[dynamic_index])
-    #         else:
-    #             first_line = dynamic_block[0]
-    #             if first_line in head:
-    #                 static_block = static[head.index(first_line)]
-    #                 additional = [first_line]
-    #                 for dynamic_block_index, line in enumerate(dynamic_block):
-    #                     if line not in static_block:
-    #                         additional.append(
-    #                             dynamic[dynamic_index][dynamic_block_index])
-    #                 if len(additional) > 1:
-    #                     changes.append(additional)
-    #             else:
-    #                 changes.append(dynamic[dynamic_index])
-    #     return sorted(changes)
+        # head = [line[0] for line in static]
+        # changes = []
+        # for dynamic_index, dynamic_block in enumerate(dynamic):
+            # if len(dynamic_block) == 1:
+                # if dynamic_block not in static:
+                    # changes.append(dynamic[dynamic_index])
+            # else:
+                # first_line = dynamic_block[0]
+                # if first_line in head:
+                    # static_block = static[head.index(first_line)]
+                    # additional = [first_line]
+                    # for dynamic_block_index, line in enumerate(dynamic_block):
+                        # if line not in static_block:
+                            # additional.append(
+                                # dynamic[dynamic_index][dynamic_block_index])
+                    # if len(additional) > 1:
+                        # changes.append(additional)
+                # else:
+                    # changes.append(dynamic[dynamic_index])
+        # return sorted(changes)

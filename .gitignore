@@ -1,6 +1,5 @@
 # non-sanitised configs etc.
-/priv/*
-!/priv/.gitkeep
+priv/
 
 # pycharm
 .idea/
