@@ -18,7 +18,7 @@ with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
         "Missing"
     ])
     i = 1
-    for fin in os.listdir(COMPARISON_DIR):
+    for fin in sorted(os.listdir(COMPARISON_DIR)):
         comparison_file = os.path.join(COMPARISON_DIR, fin)
         diff = DiffiosDiff(
             baseline=BASELINE_FILE,
