@@ -84,11 +84,11 @@ class DiffiosFile(object):
 
 class DiffiosDiff(object):
 
-    def __init__(self, baseline=None, comparison=None):
+    def __init__(self, baseline=None, comparison=None, ignore_file=None):
         # TODO: make it so DiffiosFile objects can be passed in also
         # TODO: confirm existence of files
-        self.baseline = DiffiosFile(baseline)
-        self.comparison = DiffiosFile(comparison)
+        self.baseline = DiffiosFile(baseline, ignore_file)
+        self.comparison = DiffiosFile(comparison, ignore_file)
         self.translated_comparison = self._translated(self.comparison)
         self.translated_baseline = self._translated(self.baseline)
         self.original_comparison = self._original(self.comparison)
