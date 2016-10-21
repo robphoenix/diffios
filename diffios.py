@@ -90,70 +90,29 @@ class DiffiosDiff(object):
         self.baseline = DiffiosFile(baseline, ignore_file)
         self.comparison = DiffiosFile(comparison, ignore_file)
         self.partials = PARTIALS
-        self.additional = self._find_changes(
+        self.additional = self._changes(
             self.comparison.recorded(), self.baseline.recorded())
-        self.missing = self._find_changes(
+        self.missing = self._changes(
             self.baseline.recorded(), self.comparison.recorded())
 
     def _translate_block(self, block):
-        Partials = namedtuple("Partials", "parent original translated block")
-        parent, original, translated = block[0], [], []
         post_translation_block = []
         for i, line in enumerate(block):
             match = None
             for pattern in self.partials:
                 if re.search(pattern, line):
                     match = re.search(pattern, line).group('non_var')
+                    break
             if match:
-                translated.append(match)
-                original.append(line)
                 post_translation_block.append(match)
             else:
                 post_translation_block.append(line)
-        translation = None
-        if original != translated:
-            translation = Partials(
-                parent,
-                original,
-                translated,
-                post_translation_block)
-        return translation
-
-    def _translator(self, data):
-        return [self._translate_block(d) for d in data if self._translate_block(d)]
+        return post_translation_block
 
     def _translated(self, data):
-        translated = []
-        for block in data:
-            translation = self._translate_block(block)
-            if translation:
-                translated.append(translation.block)
-            else:
-                translated.append(block)
-        return translated
+        return [self._translate_block(block) for block in data]
 
-    def _translate_changes(self, changes, translator):
-        translated_changes = []
-        for change in changes:
-            translated_change = []
-            for translated in translator:
-                if change[0] == translated.parent:
-                    translated_change.append(translated.parent)
-                    for line in change:
-                        if line in translated.translated:
-                            index = translated.translated.index(line)
-                            translation = translated.original[index]
-                            translated_change.append(translation)
-                        elif line not in translated_change:
-                            translated_change.append(line)
-                elif change[0] == translated.translated:
-                    translated_change.append(translated.original)
-            if translated_change == []:
-                translated_change = change
-            translated_changes.append(translated_change)
-        return translated_changes
-
-    def _find_changes(self, dynamic, static):
+    def _changes(self, dynamic, static):
         translated_dynamic = self._translated(dynamic)
         translated_static = self._translated(static)
         head = [line[0] for line in static]
@@ -175,6 +134,4 @@ class DiffiosDiff(object):
                         changes.append(additional)
                 else:
                     changes.append(dynamic[dynamic_index])
-        # translator = self._translator(dynamic)
-        # changes = self._translate_changes(changes, translator)
         return sorted(changes)
