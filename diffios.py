@@ -102,10 +102,8 @@ class DiffiosDiff(object):
             for pattern in self.partials:
                 if re.search(pattern, line):
                     match = re.search(pattern, line).group('non_var')
-                    break
-            if match:
-                post_translation_block.append(match)
-            else:
+                    post_translation_block.append(match)
+            if match is None:
                 post_translation_block.append(line)
         return post_translation_block
 
