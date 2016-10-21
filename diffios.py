@@ -89,53 +89,40 @@ class DiffiosDiff(object):
         # TODO: confirm existence of files
         self.baseline = DiffiosFile(baseline, ignore_file)
         self.comparison = DiffiosFile(comparison, ignore_file)
-        self.translated_comparison = self._translated(self.comparison)
-        self.translated_baseline = self._translated(self.baseline)
-        self.original_comparison = self._original(self.comparison)
-        self.original_baseline = self._original(self.baseline)
-        self.additional = self._find_changes(
-            self.translated_comparison, self.translated_baseline)
-        self.missing = self._find_changes(
-            self.translated_baseline, self.translated_comparison)
+        self.partials = PARTIALS
+        self.additional = self._changes(
+            self.comparison.recorded(), self.baseline.recorded())
+        self.missing = self._changes(
+            self.baseline.recorded(), self.comparison.recorded())
 
-    def _translate_partials(self, block):
-        Partials = namedtuple("Partials", "translated originals")
-        translated, original = [], [block[0]]
-        for line in block:
-            for pattern in PARTIALS:
+    def _translate_block(self, block):
+        post_translation_block = []
+        for i, line in enumerate(block):
+            match = None
+            for pattern in self.partials:
                 if re.search(pattern, line):
-                    original.append(line)
-                    line = re.search(pattern, line).group('non_var')
-                    break
-            translated.append(line)
-        if len(original) == 1:
-            original = ()
-        if len(original) == 2:
-            original = set(original)
-        return Partials(translated, tuple(original))
+                    match = re.search(pattern, line).group('non_var')
+                    post_translation_block.append(match)
+            if match is None:
+                post_translation_block.append(line)
+        return post_translation_block
 
-    def _translated(self, df):
-        return [self._translate_partials(b).translated for b in df.recorded()]
+    def _translated(self, data):
+        return [self._translate_block(block) for block in data]
 
-    def _original(self, df):
-        originals = []
-        for block in df.recorded():
-            original = self._translate_partials(block).originals
-            if original:
-                originals.append(original)
-        return originals
-
-    def _find_changes(self, dynamic, static):
+    def _changes(self, dynamic, static):
+        translated_dynamic = self._translated(dynamic)
+        translated_static = self._translated(static)
         head = [line[0] for line in static]
         changes = []
-        for dynamic_index, dynamic_block in enumerate(dynamic):
+        for dynamic_index, dynamic_block in enumerate(translated_dynamic):
             if len(dynamic_block) == 1:
-                if dynamic_block not in static:
+                if dynamic_block not in translated_static:
                     changes.append(dynamic[dynamic_index])
             else:
                 first_line = dynamic_block[0]
                 if first_line in head:
-                    static_block = static[head.index(first_line)]
+                    static_block = translated_static[head.index(first_line)]
                     additional = [first_line]
                     for dynamic_block_index, line in enumerate(dynamic_block):
                         if line not in static_block:
