@@ -133,3 +133,23 @@ class DiffiosDiff(object):
                 else:
                     changes.append(dynamic[dynamic_index])
         return sorted(changes)
+
+    def _format_changes(self, data):
+        return "\n\n".join("\n".join(lines) for lines in data)
+
+    def pprint_additional(self):
+        return self._format_changes(self.additional)
+
+    def pprint_missing(self):
+        return self._format_changes(self.missing)
+
+    def diff(self):
+        print("\nComparing {comparison} against baseline: {baseline}".format(
+            comparison=os.path.basename(self.comparison.config_filename),
+            baseline=os.path.basename(self.baseline.config_filename)
+        ))
+        print("\n[+] additional [+]\n")
+        print("{}".format(self.pprint_additional()))
+        print("\n[-] missing [-]\n")
+        print("{}".format(self.pprint_missing()))
+        print("\n--- END ---\n")

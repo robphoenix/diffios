@@ -32,7 +32,7 @@ with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
             os.path.basename(diff.comparison.config_filename),
             diff.comparison.hostname,
             os.path.basename(diff.baseline.config_filename),
-            "\n\n".join("\n".join(lines) for lines in diff.additional),
-            "\n\n".join("\n".join(lines) for lines in diff.missing)
+            diff.pprint_additional(),
+            diff.pprint_missing()
         ])
         i += 1
