@@ -161,7 +161,7 @@ class DiffiosDiff(object):
         for dynamic_index, dynamic_block in enumerate(translated_dynamic):
             if len(dynamic_block) == 1:
                 if dynamic_block not in translated_static:
-                    changes.append(translated_dynamic[dynamic_index])
+                    changes.append(dynamic[dynamic_index])
             else:
                 first_line = dynamic_block[0]
                 if first_line in head:
@@ -170,11 +170,11 @@ class DiffiosDiff(object):
                     for dynamic_block_index, line in enumerate(dynamic_block):
                         if line not in static_block:
                             additional.append(
-                                translated_dynamic[dynamic_index][dynamic_block_index])
+                                dynamic[dynamic_index][dynamic_block_index])
                     if len(additional) > 1:
                         changes.append(additional)
                 else:
-                    changes.append(translated_dynamic[dynamic_index])
-        translator = self._translator(dynamic)
-        changes = self._translate_changes(changes, translator)
+                    changes.append(dynamic[dynamic_index])
+        # translator = self._translator(dynamic)
+        # changes = self._translate_changes(changes, translator)
         return sorted(changes)
