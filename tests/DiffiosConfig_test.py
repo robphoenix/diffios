@@ -29,8 +29,11 @@ class DiffiosConfigTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_raises_error_if_ignore_file_does_not_exist(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(RuntimeError) as e:
             DiffiosConfig(self.config, ignores="alt_ignore_file")
+        self.assertEqual(
+            str(e.exception),
+            "[FATAL] DiffiosConfig() received an invalid argument: ignores=alt_ignore_file\n")
 
     def test_ignore_filename_is_False_if_ignores_is_False(self):
         dc = DiffiosConfig(self.config, ignores=False)

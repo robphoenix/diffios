@@ -3,3 +3,5 @@
 # diffios
 
 Diff changes between Cisco device configuration and a candidate configuration.
+
+minimum python version 2.7
