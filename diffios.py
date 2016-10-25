@@ -267,8 +267,8 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        comparison = self.comparison.recorded()
-        baseline = self.baseline.recorded()
+        comparison = self.comparison.recorded
+        baseline = self.baseline.recorded
         additional = self._changes(comparison, baseline)
         return additional
 
@@ -279,8 +279,8 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        comparison = self.comparison.recorded()
-        baseline = self.baseline.recorded()
+        comparison = self.comparison.recorded
+        baseline = self.baseline.recorded
         missing = self._changes(baseline, comparison)
         return missing
 
