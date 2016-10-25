@@ -28,9 +28,9 @@ class DiffiosConfigTest(unittest.TestCase):
         actual = dc.ignore_filename
         self.assertEqual(expected, actual)
 
-    def test_ignore_filename_is_False_if_ignore_file_does_not_exist(self):
-        dc = DiffiosConfig(self.config, ignores="alt_ignore_file")
-        self.assertFalse(dc.ignore_filename)
+    def test_raises_error_if_ignore_file_does_not_exist(self):
+        with self.assertRaises(RuntimeError):
+            DiffiosConfig(self.config, ignores="alt_ignore_file")
 
     def test_ignore_filename_is_False_if_ignores_is_False(self):
         dc = DiffiosConfig(self.config, ignores=False)

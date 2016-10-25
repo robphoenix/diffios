@@ -39,8 +39,6 @@ class DiffiosConfig(object):
         if ignores is None:
             if os.path.exists(os.path.join(os.getcwd(), "diffios_ignore")):
                 ignores = os.path.join(os.getcwd(), "diffios_ignore")
-            else:
-                ignores = None
 
         if bool(ignores):
             if isinstance(ignores, list):
@@ -56,7 +54,9 @@ class DiffiosConfig(object):
                     self.ignore_filename = ignores
             else:
                 raise RuntimeError(
-                    "[FATAL] DiffiosConfig() received an invalid argument\n")
+                    "[FATAL] DiffiosConfig() received an invalid argument: ignores={}\n".format(
+                        ignores
+                    ))
 
         if isinstance(config, list):
             self.config = self._remove_invalid_lines(config)
@@ -71,7 +71,9 @@ class DiffiosConfig(object):
                 self.config_filename = config
         else:
             raise RuntimeError(
-                "[FATAL] DiffiosConfig() received an invalid argument\n")
+                "[FATAL] DiffiosConfig() received an invalid argument: config={}\n".format(
+                    config
+                ))
 
     def _remove_invalid_lines(self, lines):
         """TODO: Docstring for _remove_invalid_lines.
