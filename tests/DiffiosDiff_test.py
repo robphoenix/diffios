@@ -6,6 +6,6 @@ sys.path.append(os.path.abspath("."))
 from diffios import DiffiosDiff
 
 
-class DiffiosDiffTest(TestCase):
+# class DiffiosDiffTest(TestCase):
 
 

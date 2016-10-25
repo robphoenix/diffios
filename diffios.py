@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import re
@@ -17,11 +17,11 @@ PARTIALS = [
 ]
 
 
-class DiffiosFile(object):
+class DiffiosConfig(object):
 
-    """TODO: Docstring for DiffiosFile. """
+    """TODO: Docstring for DiffiosConf. """
 
-    def __init__(self, config_filename, ignore_filename=None):
+    def __init__(self, config, ignores=None):
         """TODO: Docstring for __init__.
 
         Args:
@@ -33,42 +33,58 @@ class DiffiosFile(object):
         Returns: TODO
 
         """
-        if ignore_filename is None:
-            ignore_filename = os.path.abspath("diffios_ignore")
-            # TODO: confirm presence of files
-        self.ignore_filename = ignore_filename
-        self.config_filename = os.path.abspath(config_filename)
+        self.ignore_filename = False
+        self.config_filename = False
+        self.ignores = None
+        self.config = None
 
-    def _file_lines(self, fin):
-        """TODO: Docstring for _file_lines.
+        if ignores is None:
+            if os.path.exists(os.path.abspath("diffios_ignore")):
+                ignores = os.path.abspath("diffios_ignore")
+            else:
+                ignores = None
 
-        Args:
-            fin (TODO): TODO
+        if bool(ignores):
+            if isinstance(ignores, list):
+                self.ignores = ignores
+            elif os.path.isfile(os.path.abspath(ignores)):
+                try:
+                    with open(os.path.abspath(ignores)) as f:
+                        self.ignores = [line.strip().lower() for line in f.readlines()]
+                except IOError:
+                    print("[FATAL] Diffios could not open '{}".format(config))
+                    raise RuntimeError
+                else:
+                    self.ignore_filename = ignores
 
-        Returns: TODO
+        if isinstance(config, list):
+            self.config = self._remove_invalid_lines(config)
+        elif os.path.isfile(os.path.abspath(config)):
+            try:
+                with open(os.path.abspath(config)) as f:
+                    self.config = self._remove_invalid_lines(f.readlines())
+            except IOError:
+                print("[FATAL] Diffios could not open '{}".format(config))
+                raise RuntimeError
+            else:
+                self.config_filename = config
+        else:
+            raise RuntimeError(
+                "[FATAL] DiffiosConfig() received an invalid argument\n")
 
-        """
-        with open(fin) as fl:
-            return fl.readlines()
-
-    @property
-    def config_lines(self):
-        """TODO: Docstring for config_lines.
-        Returns: TODO
-
-        """
-        return self._file_lines(self.config_filename)
-
-    def _remove_invalid_lines(self):
+    def _remove_invalid_lines(self, lines):
         """TODO: Docstring for _remove_invalid_lines.
 
         Returns: TODO
 
         """
-        return [l.rstrip() for l in self.config_lines if self._valid_line(l)]
+        return [l.rstrip() for l in lines if self._valid_line(l)]
 
     def _valid_line(self, line):
-        """TODO: Docstring for .
+        """TODO: Docstring for _valid_line.
+
+        Args:
+            line (TODO): TODO
 
         Returns: TODO
 
@@ -76,17 +92,17 @@ class DiffiosFile(object):
         lstrip = line.strip()
         return len(lstrip) > 0 and not lstrip.startswith("!")
 
-    def _group_into_blocks(self, conf_lines):
+    def _group_into_blocks(self, config):
         """TODO: Docstring for _group_into_blocks.
 
         Args:
-            conf_lines (TODO): TODO
+            config (TODO): TODO
 
         Returns: TODO
 
         """
         previous, groups = [], []
-        for i, line in enumerate(conf_lines):
+        for i, line in enumerate(config):
             if line.startswith(" "):
                 previous.append(line)
             else:
@@ -95,13 +111,13 @@ class DiffiosFile(object):
         return sorted(groups)[1:]
 
     @property
-    def blocks(self):
+    def config_blocks(self):
         """TODO: Docstring for blocks.
 
         Returns: TODO
 
         """
-        return self._group_into_blocks(self._remove_invalid_lines())
+        return self._group_into_blocks(self.config)
 
     @property
     def hostname(self):
@@ -110,29 +126,19 @@ class DiffiosFile(object):
         Returns: TODO
 
         """
-        for line in self.config_lines:
+        for line in self.config:
             if "hostname" in line.lower():
                 return line.split()[1]
 
-    def ignore_lines(self):
-        """TODO: Docstring for ignore_lines.
-
-        Returns: TODO
-
-        """
-        il = self._file_lines(self.ignore_filename)
-        return [line.strip().lower() for line in il]
-
-    def partition(self):
+    def _partition(self):
         """TODO: Docstring for partition.
 
         Returns: TODO
 
         """
         Partition = namedtuple("Partition", "ignored recorded")
-        ignore = self.ignore_lines()
-        ignore_removed = self._remove_invalid_lines()
-        config_blocks = self._group_into_blocks(ignore_removed)
+        ignore = self.ignores
+        config_blocks = self._group_into_blocks(self.config)
         ignored = []
         for i, block in enumerate(config_blocks):
             for j, line in enumerate(block):
@@ -144,8 +150,8 @@ class DiffiosFile(object):
                         else:
                             ignored.append(block[j])
                             block[j] = ""
-        p = Partition(ignored, [line for line in config_blocks if line])
-        return p
+        recorded = [line for line in config_blocks if line]
+        return Partition(ignored, recorded)
 
     @property
     def ignored(self):
@@ -154,7 +160,7 @@ class DiffiosFile(object):
         Returns: TODO
 
         """
-        return self.partition().ignored
+        return self._partition().ignored
 
     @property
     def recorded(self):
@@ -163,7 +169,7 @@ class DiffiosFile(object):
         Returns: TODO
 
         """
-        return self.partition().recorded
+        return self._partition().recorded
 
 
 class DiffiosDiff(object):
@@ -179,10 +185,10 @@ class DiffiosDiff(object):
             ignore_file (TODO): TODO
 
         """
-        # TODO: make it so DiffiosFile objects can be passed in also
+        # TODO: make it so DiffiosConf objects can be passed in also
         # TODO: confirm existence of files
-        self.baseline = DiffiosFile(baseline, ignore_file)
-        self.comparison = DiffiosFile(comparison, ignore_file)
+        self.baseline = DiffiosConfig(baseline, ignore_file)
+        self.comparison = DiffiosConfig(comparison, ignore_file)
         self.partials = PARTIALS
 
     def _translate_block(self, block):
@@ -309,8 +315,8 @@ class DiffiosDiff(object):
 
         """
         print("\nComparing {comparison} against baseline: {baseline}".format(
-            comparison=os.path.basename(self.comparison.config_filename),
-            baseline=os.path.basename(self.baseline.config_filename)
+            comparison=os.path.basename(self.comparison.config),
+            baseline=os.path.basename(self.baseline.config)
         ))
         print("\n[+] additional [+]\n")
         print("{}".format(self.pprint_additional()))
