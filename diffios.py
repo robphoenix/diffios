@@ -19,7 +19,20 @@ PARTIALS = [
 
 class DiffiosFile(object):
 
+    """TODO: Docstring for DiffiosFile. """
+
     def __init__(self, config_filename, ignore_filename=None):
+        """TODO: Docstring for __init__.
+
+        Args:
+            config_filename (TODO): TODO
+
+        Kwargs:
+            ignore_filename (TODO): TODO
+
+        Returns: TODO
+
+        """
         if ignore_filename is None:
             ignore_filename = os.path.abspath("diffios_ignore")
             # TODO: confirm presence of files
@@ -30,17 +43,43 @@ class DiffiosFile(object):
         self.hostname = self._hostname()
 
     def _file_lines(self, fin):
+        """TODO: Docstring for _file_lines.
+
+        Args:
+            fin (TODO): TODO
+
+        Returns: TODO
+
+        """
         with open(fin) as fl:
             return fl.readlines()
 
     def _remove_invalid_lines(self):
+        """TODO: Docstring for _remove_invalid_lines.
+
+        Returns: TODO
+
+        """
         return [l.rstrip() for l in self.config_lines if self._valid_line(l)]
 
     def _valid_line(self, line):
+        """TODO: Docstring for .
+
+        Returns: TODO
+
+        """
         lstrip = line.strip()
         return len(lstrip) > 0 and not lstrip.startswith("!")
 
     def _group_into_blocks(self, conf_lines):
+        """TODO: Docstring for _group_into_blocks.
+
+        Args:
+            conf_lines (TODO): TODO
+
+        Returns: TODO
+
+        """
         previous, groups = [], []
         for i, line in enumerate(conf_lines):
             if line.startswith(" "):
@@ -51,15 +90,30 @@ class DiffiosFile(object):
         return sorted(groups)[1:]
 
     def _hostname(self):
+        """TODO: Docstring for _hostname.
+
+        Returns: TODO
+
+        """
         for line in self.config_lines:
             if "hostname" in line.lower():
                 return line.split()[1]
 
     def ignore_lines(self):
+        """TODO: Docstring for ignore_lines.
+
+        Returns: TODO
+
+        """
         il = self._file_lines(self.ignore_filename)
         return [line.strip().lower() for line in il]
 
     def partition(self):
+        """TODO: Docstring for partition.
+
+        Returns: TODO
+
+        """
         Partition = namedtuple("Partition", "ignored recorded")
         ignore = self.ignore_lines()
         ignore_removed = self._remove_invalid_lines()
@@ -79,15 +133,35 @@ class DiffiosFile(object):
         return p
 
     def ignored(self):
+        """TODO: Docstring for ignored.
+
+        Returns: TODO
+
+        """
         return self.partition().ignored
 
     def recorded(self):
+        """TODO: Docstring for recorded.
+
+        Returns: TODO
+
+        """
         return self.partition().recorded
 
 
 class DiffiosDiff(object):
 
+    """Docstring for DiffiosDiff. """
+
     def __init__(self, baseline=None, comparison=None, ignore_file=None):
+        """TODO: Docstring for __init__.
+
+        Kwargs:
+            baseline (TODO): TODO
+            comparison (TODO): TODO
+            ignore_file (TODO): TODO
+
+        """
         # TODO: make it so DiffiosFile objects can be passed in also
         # TODO: confirm existence of files
         self.baseline = DiffiosFile(baseline, ignore_file)
@@ -99,6 +173,14 @@ class DiffiosDiff(object):
             self.baseline.recorded(), self.comparison.recorded())
 
     def _translate_block(self, block):
+        """TODO: Docstring for _translate_block.
+
+        Args:
+            block (TODO): TODO
+
+        Returns: TODO
+
+        """
         post_translation_block = []
         for i, line in enumerate(block):
             match = None
@@ -111,9 +193,26 @@ class DiffiosDiff(object):
         return post_translation_block
 
     def _translated(self, data):
+        """TODO: Docstring for _translated.
+
+        Args:
+            data (TODO): TODO
+
+        Returns: TODO
+
+        """
         return [self._translate_block(block) for block in data]
 
     def _changes(self, dynamic, static):
+        """TODO: Docstring for _changes.
+
+        Args:
+            dynamic (TODO): TODO
+            static (TODO): TODO
+
+        Returns: TODO
+
+        """
         translated_dynamic = self._translated(dynamic)
         translated_static = self._translated(static)
         head = [line[0] for line in static]
@@ -138,6 +237,14 @@ class DiffiosDiff(object):
         return sorted(changes)
 
     def _format_changes(self, data):
+        """TODO: Docstring for _format_changes.
+
+        Args:
+            data (TODO): TODO
+
+        Returns: TODO
+
+        """
         return "\n\n".join("\n".join(lines) for lines in data)
 
     def pprint_additional(self):
@@ -147,6 +254,11 @@ class DiffiosDiff(object):
         return self._format_changes(self.missing)
 
     def diff(self):
+        """TODO: Docstring for diff.
+
+        Returns: TODO
+
+        """
         print("\nComparing {comparison} against baseline: {baseline}".format(
             comparison=os.path.basename(self.comparison.config_filename),
             baseline=os.path.basename(self.baseline.config_filename)
