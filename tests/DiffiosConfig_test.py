@@ -2,7 +2,9 @@ import os
 import sys
 import unittest
 
+THIS_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.abspath("."))
+
 from diffios import DiffiosConfig
 from utils import baseline_blocks, baseline_partition
 
@@ -20,7 +22,7 @@ class DiffiosConfigTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_alternative_ignore_filename(self):
-        alt_ignore_path = os.path.join(os.getcwd(), "tests", "alt_diffios_ignore")
+        alt_ignore_path = os.path.join(THIS_DIR, "alt_diffios_ignore")
         expected = alt_ignore_path
         dc = DiffiosConfig(self.config, ignores=alt_ignore_path)
         actual = dc.ignore_filename
