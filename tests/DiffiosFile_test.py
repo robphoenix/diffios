@@ -58,10 +58,10 @@ class DiffiosFileTest(unittest.TestCase):
 
     def test_ignored(self):
         expected = baseline_partition().ignored
-        actual = self.df.ignored()
+        actual = self.df.ignored
         self.assertEqual(expected, actual)
 
     def test_recorded(self):
         expected = baseline_partition().recorded
-        actual = self.df.recorded()
+        actual = self.df.recorded
         self.assertEqual(expected, actual)

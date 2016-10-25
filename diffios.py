@@ -38,9 +38,6 @@ class DiffiosFile(object):
             # TODO: confirm presence of files
         self.ignore_filename = ignore_filename
         self.config_filename = os.path.abspath(config_filename)
-        self.config_lines = self._file_lines(self.config_filename)
-        self.blocks = self._group_into_blocks(self._remove_invalid_lines())
-        self.hostname = self._hostname()
 
     def _file_lines(self, fin):
         """TODO: Docstring for _file_lines.
@@ -53,6 +50,14 @@ class DiffiosFile(object):
         """
         with open(fin) as fl:
             return fl.readlines()
+
+    @property
+    def config_lines(self):
+        """TODO: Docstring for config_lines.
+        Returns: TODO
+
+        """
+        return self._file_lines(self.config_filename)
 
     def _remove_invalid_lines(self):
         """TODO: Docstring for _remove_invalid_lines.
@@ -89,7 +94,17 @@ class DiffiosFile(object):
                 previous = [line]
         return sorted(groups)[1:]
 
-    def _hostname(self):
+    @property
+    def blocks(self):
+        """TODO: Docstring for blocks.
+
+        Returns: TODO
+
+        """
+        return self._group_into_blocks(self._remove_invalid_lines())
+
+    @property
+    def hostname(self):
         """TODO: Docstring for _hostname.
 
         Returns: TODO
@@ -132,6 +147,7 @@ class DiffiosFile(object):
         p = Partition(ignored, [line for line in config_blocks if line])
         return p
 
+    @property
     def ignored(self):
         """TODO: Docstring for ignored.
 
@@ -140,6 +156,7 @@ class DiffiosFile(object):
         """
         return self.partition().ignored
 
+    @property
     def recorded(self):
         """TODO: Docstring for recorded.
 
@@ -167,10 +184,6 @@ class DiffiosDiff(object):
         self.baseline = DiffiosFile(baseline, ignore_file)
         self.comparison = DiffiosFile(comparison, ignore_file)
         self.partials = PARTIALS
-        self.additional = self._changes(
-            self.comparison.recorded(), self.baseline.recorded())
-        self.missing = self._changes(
-            self.baseline.recorded(), self.comparison.recorded())
 
     def _translate_block(self, block):
         """TODO: Docstring for _translate_block.
@@ -247,10 +260,46 @@ class DiffiosDiff(object):
         """
         return "\n\n".join("\n".join(lines) for lines in data)
 
+    @property
+    def additional(self):
+        """TODO: Docstring for additional.
+
+        Returns: TODO
+
+        """
+        comparison = self.comparison.recorded()
+        baseline = self.baseline.recorded()
+        additional = self._changes(comparison, baseline)
+        return additional
+
+    @property
+    def missing(self):
+        """TODO: Docstring for missing.
+
+        Returns: TODO
+
+        """
+        comparison = self.comparison.recorded()
+        baseline = self.baseline.recorded()
+        missing = self._changes(baseline, comparison)
+        return missing
+
+    @property
     def pprint_additional(self):
+        """TODO: Docstring for pprint_additional.
+
+        Returns: TODO
+
+        """
         return self._format_changes(self.additional)
 
+    @property
     def pprint_missing(self):
+        """TODO: Docstring for pprint_missing.
+
+        Returns: TODO
+
+        """
         return self._format_changes(self.missing)
 
     def diff(self):
