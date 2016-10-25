@@ -54,6 +54,9 @@ class DiffiosConfig(object):
                     raise RuntimeError
                 else:
                     self.ignore_filename = ignores
+            else:
+                raise RuntimeError(
+                    "[FATAL] DiffiosConfig() received an invalid argument\n")
 
         if isinstance(config, list):
             self.config = self._remove_invalid_lines(config)
