@@ -4,8 +4,6 @@
 import re
 import os
 from collections import namedtuple
-# import csv
-# from pprint import pprint
 
 
 PARTIALS = [
@@ -39,8 +37,8 @@ class DiffiosConfig(object):
         self.config = None
 
         if ignores is None:
-            if os.path.exists(os.path.abspath("diffios_ignore")):
-                ignores = os.path.abspath("diffios_ignore")
+            if os.path.exists(os.path.join(os.getcwd(), "diffios_ignore")):
+                ignores = os.path.join(os.getcwd(), "diffios_ignore")
             else:
                 ignores = None
 

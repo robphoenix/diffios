@@ -12,20 +12,43 @@ class DiffiosConfigTest(unittest.TestCase):
     def setUp(self):
         self.configs_dir = os.path.abspath(os.path.join("tests", "configs"))
         self.config = os.path.join(self.configs_dir, "baseline.conf")
-        self.df = DiffiosConfig(self.config)
+        self.dc = DiffiosConfig(self.config)
 
     def test_default_ignore_filename(self):
-        expected = os.path.abspath("diffios_ignore")
-        actual = self.df.ignore_filename
+        expected = os.path.join(os.getcwd(), "diffios_ignore")
+        actual = self.dc.ignore_filename
         self.assertEqual(expected, actual)
 
-    def test_ignore_filename_is_false_if_ignore_file_does_not_exist(self):
+    def test_alternative_ignore_filename(self):
+        alt_ignore_path = os.path.join(os.getcwd(), "tests", "alt_diffios_ignore")
+        expected = alt_ignore_path
+        dc = DiffiosConfig(self.config, ignores=alt_ignore_path)
+        actual = dc.ignore_filename
+        self.assertEqual(expected, actual)
+
+    def test_ignore_filename_is_False_if_ignore_file_does_not_exist(self):
         dc = DiffiosConfig(self.config, ignores="alt_ignore_file")
+        self.assertFalse(dc.ignore_filename)
+
+    def test_ignore_filename_is_False_if_ignores_is_False(self):
+        dc = DiffiosConfig(self.config, ignores=False)
+        self.assertFalse(dc.ignore_filename)
+
+    def test_ignore_filename_is_False_if_ignores_is_empty_list(self):
+        dc = DiffiosConfig(self.config, ignores=[])
+        self.assertFalse(dc.ignore_filename)
+
+    def test_ignore_filename_is_False_if_ignores_is_empty_string(self):
+        dc = DiffiosConfig(self.config, ignores="")
+        self.assertFalse(dc.ignore_filename)
+
+    def test_ignore_filename_is_False_if_ignores_is_zero(self):
+        dc = DiffiosConfig(self.config, ignores=0)
         self.assertFalse(dc.ignore_filename)
 
     def test_config_filename(self):
         actual = self.config
-        expected = self.df.config_filename
+        expected = self.dc.config_filename
         self.assertEqual(expected, actual)
 
     # config property now removes invalid lines
@@ -36,26 +59,26 @@ class DiffiosConfigTest(unittest.TestCase):
 
     def test_hostname(self):
         expected = "BASELINE01"
-        actual = self.df.hostname
+        actual = self.dc.hostname
         self.assertEqual(expected, actual)
 
     def test_blocks(self):
         expected = baseline_blocks()
-        actual = self.df.config_blocks
+        actual = self.dc.config_blocks
         self.assertEqual(expected, actual)
 
     def test_ignore_lines(self):
         ignore_file = open("diffios_ignore").readlines()
         expected = [l.strip().lower() for l in ignore_file]
-        actual = self.df.ignores
+        actual = self.dc.ignores
         self.assertEqual(expected, actual)
 
     def test_ignored(self):
         expected = baseline_partition().ignored
-        actual = self.df.ignored
+        actual = self.dc.ignored
         self.assertEqual(expected, actual)
 
     def test_recorded(self):
         expected = baseline_partition().recorded
-        actual = self.df.recorded
+        actual = self.dc.recorded
         self.assertEqual(expected, actual)
