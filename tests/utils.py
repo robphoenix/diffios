@@ -93,6 +93,7 @@ def baseline_blocks():
            ' rsakeypair TP-self-signed-1234567890'],
           ['dot1x critical eapol'],
           ['dot1x system-auth-control'],
+          ['end'],
           ['errdisable recovery cause arp-inspection'],
           ['errdisable recovery cause bpduguard'],
           ['errdisable recovery cause channel-misconfig (STP)'],
@@ -668,6 +669,7 @@ def baseline_partition():
                 ' subject-name cn=IOS-Self-Signed-Certificate-1234567890',
                 ' revocation-check none',
                 ' rsakeypair TP-self-signed-1234567890'],
+                ['end'],
                 ['hostname BASELINE01']],
     recorded=[['#                                                                             '
                 '#'],

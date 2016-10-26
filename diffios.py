@@ -104,14 +104,16 @@ class DiffiosConfig(object):
         Returns: TODO
 
         """
-        previous, groups = [], []
-        for i, line in enumerate(config):
-            if line.startswith(" "):
-                previous.append(line)
+        current_group, groups = [], []
+        for line in config:
+            if not line.startswith(' ') and current_group:
+                groups.append(current_group)
+                current_group = [line]
             else:
-                groups.append(previous)
-                previous = [line]
-        return sorted(groups)[1:]
+                current_group.append(line)
+        if current_group:
+            groups.append(current_group)
+        return sorted(groups)
 
     @property
     def config_blocks(self):
