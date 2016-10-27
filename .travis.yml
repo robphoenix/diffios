@@ -10,10 +10,10 @@ matrix:
     allow_failures:
         - "nightly"
 
-install:
-    - pip install -r requirements.txt
+install: pip install -r requirements.txt
 
-before_script:
-    - flake8
+before_script: flake8
 
 script: py.test
+
+after_success: coveralls
