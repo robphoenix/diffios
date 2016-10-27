@@ -1,8 +1,10 @@
 # https://stackoverflow.com/questions/15173225/how-to-calculate-cosine-similarity-given-2-sentence-strings-python
-import re, math
+import re
+import math
 from collections import Counter
 
 WORD = re.compile(r'\w+')
+
 
 def get_cosine(vec1, vec2):
     print(vec1)
@@ -19,9 +21,10 @@ def get_cosine(vec1, vec2):
     else:
         return float(numerator) / denominator
 
+
 def text_to_vector(text):
-     words = WORD.findall(text)
-     return Counter(words)
+    words = WORD.findall(text)
+    return Counter(words)
 
 text1 = 'This is a foo bar sentence .'
 text2 = 'This sentence is similar to a foo bar sentence .'
