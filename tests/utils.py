@@ -652,9 +652,7 @@ def baseline_blocks():
 
 
 def baseline_partition():
-    bp = Partition(ignored=[' server name xxxxxx12345',
-                    ' server name yyyyyy67890',
-                    ['banner login ^C'],
+    bp = Partition(ignored=[['banner login ^C'],
                     ['banner motd ^C'],
                     ['crypto pki certificate chain TP-self-signed-1234567890',
                 ' certificate self-signed 01',
@@ -747,8 +745,8 @@ def baseline_partition():
                 ['aaa authorization exec VTY group radius local'],
                 ['aaa authorization network default group radius'],
                 ['aaa group server radius ISE',
-                '',
-                '',
+                ' server name xxxxxx12345',
+                ' server name yyyyyy67890',
                 ' load-balance method least-outstanding'],
                 ['aaa new-model'],
                 ['aaa server radius dynamic-author',

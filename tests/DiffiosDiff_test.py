@@ -71,6 +71,76 @@ int_comparison = """interface FastEthernet0/5
  spanning-tree bpduguard enable
  service-policy input QOS-CLASSIFY""".split('\n')
 
+aaa_baseline = """aaa group server radius ISE
+ server name bob
+ server name alice
+ load-balance method least-outstanding
+!
+aaa authentication login VTY group radius local
+aaa authentication login CON group radius local
+aaa authentication dot1x default group radius
+aaa authorization console
+aaa authorization config-commands
+aaa authorization exec VTY group radius local
+aaa authorization exec CON group radius local
+aaa authorization network default group radius
+aaa accounting update periodic 15
+aaa accounting dot1x default start-stop group radius
+aaa accounting exec VTY start-stop group radius
+aaa accounting exec CON start-stop group radius
+aaa accounting system default start-stop group radius
+no aaa accounting system guarantee-first
+!
+aaa server radius dynamic-author
+ client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL
+ client 10.20.20.1 server-key 7 1234567890ABCDEFGHIJKL
+!
+aaa session-id common
+clock summer-time BST recurring last Sun Mar 2:00 last Sun Oct 2:00
+system mtu routing 1500
+authentication mac-move permit
+authentication critical recovery delay 600""".split('\n')
+
+aaa_comparison = """aaa group server radius ISE
+ server name bob
+ server name alice
+ load-balance method least-outstanding
+!
+aaa authentication login default group tacacs+ local
+aaa authentication login VTY group tacacs+ local
+aaa authentication login CON group tacacs+ local
+aaa authentication dot1x default group radius
+aaa authorization console
+aaa authorization config-commands
+aaa authorization exec default group tacacs+ local
+aaa authorization exec VTY group tacacs+ local
+aaa authorization exec CON group tacacs+ local
+aaa authorization network default group radius
+aaa accounting update periodic 15
+aaa accounting dot1x default start-stop group radius
+aaa accounting exec VTY start-stop group tacacs+
+aaa accounting exec CON start-stop group tacacs+
+aaa accounting commands 0 VTY start-stop group tacacs+
+aaa accounting commands 0 CON start-stop group tacacs+
+aaa accounting commands 15 VTY start-stop group tacacs+
+aaa accounting commands 15 CON start-stop group tacacs+
+aaa accounting system default start-stop group radius
+no aaa accounting system guarantee-first
+!
+!
+!
+!
+!
+aaa server radius dynamic-author
+ client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL
+ client 10.20.20.1 server-key 7 1234567890ABCDEFGHIJKL
+!
+aaa session-id common
+clock summer-time BST recurring last Sun Mar 2:00 last Sun Oct 2:00
+system mtu routing 1500
+authentication mac-move permit
+authentication critical recovery delay 600""".split('\n')
+
 
 class DiffiosDiffTest(TestCase):
 
@@ -116,6 +186,38 @@ class DiffiosDiffTest(TestCase):
         ]]
         diff = DiffiosDiff(baseline=int_baseline, comparison=int_comparison)
         actual_additional = diff.additional
+        actual_missing = diff.missing
+        self.assertEqual(expected_additional, actual_additional)
+        self.assertEqual(expected_missing, actual_missing)
+
+    def test_different_aaa_config(self):
+        expected_additional = [
+            ['aaa accounting commands 0 CON start-stop group tacacs+'],
+            ['aaa accounting commands 0 VTY start-stop group tacacs+'],
+            ['aaa accounting commands 15 CON start-stop group tacacs+'],
+            ['aaa accounting commands 15 VTY start-stop group tacacs+'],
+            ['aaa accounting exec CON start-stop group tacacs+'],
+            ['aaa accounting exec VTY start-stop group tacacs+'],
+            ['aaa authentication login CON group tacacs+ local'],
+            ['aaa authentication login VTY group tacacs+ local'],
+            ['aaa authentication login default group tacacs+ local'],
+            ['aaa authorization exec CON group tacacs+ local'],
+            ['aaa authorization exec VTY group tacacs+ local'],
+            ['aaa authorization exec default group tacacs+ local'],
+            ['aaa server radius dynamic-author',
+             ' client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        expected_missing = [
+            ['aaa accounting exec CON start-stop group radius'],
+            ['aaa accounting exec VTY start-stop group radius'],
+            ['aaa authentication login CON group radius local'],
+            ['aaa authentication login VTY group radius local'],
+            ['aaa authorization exec CON group radius local'],
+            ['aaa authorization exec VTY group radius local'],
+            ['aaa server radius dynamic-author',
+             ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        diff = DiffiosDiff(baseline=aaa_baseline, comparison=aaa_comparison)
+        actual_additional = diff.additional
+        print(actual_additional)
         actual_missing = diff.missing
         self.assertEqual(expected_additional, actual_additional)
         self.assertEqual(expected_missing, actual_missing)
