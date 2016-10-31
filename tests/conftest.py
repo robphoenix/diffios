@@ -1453,5 +1453,3 @@ clock summer-time BST recurring last Sun Mar 2:00 last Sun Oct 2:00
 system mtu routing 1500
 authentication mac-move permit
 authentication critical recovery delay 600""".split('\n')
-
-
