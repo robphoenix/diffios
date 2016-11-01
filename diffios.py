@@ -40,6 +40,28 @@ class DiffiosConfig(object):
         ignores (str|list): Path to ignores file, or list
             containing lines to ignore
 
+    >>> config = [
+    ... '!',
+    ... 'hostname ROUTER',
+    ... '!',
+    ... 'interface FastEthernet0/1',
+    ... ' description **Link to Core**',
+    ... ' ip address 192.168.0.1 255.255.255.0']
+    >>> ignores = [
+    ... 'hostname',
+    ... '^ description']
+    >>> conf = DiffiosConfig(config=config, ignores=ignores)
+    >>> conf.ignore_filename
+    >>> conf.config_filename
+    >>> conf.ignores
+    ['hostname', '^ description']
+    >>> conf.config
+    ['hostname ROUTER', 'interface FastEthernet0/1', ' description **Link to Core**', ' ip address 192.168.0.1 255.255.255.0']
+    >>> conf.ignored
+    [['hostname ROUTER'], [' description **Link to Core**']]
+    >>> conf.recorded
+    [['interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.0']]
+
     """
 
     def __init__(self, config=None, ignores=None):
