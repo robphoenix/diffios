@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 import sys
 
@@ -7,17 +9,6 @@ THIS_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.abspath("."))
 
 from diffios import DiffiosConfig
-
-
-@pytest.fixture
-def config():
-    configs_dir = os.path.abspath(os.path.join("tests", "configs"))
-    return os.path.join(configs_dir, "baseline.conf")
-
-
-@pytest.fixture
-def dc():
-    return DiffiosConfig(config())
 
 
 def test_default_ignore_filename(dc):
@@ -37,20 +28,20 @@ def test_raises_error_if_ignore_file_does_not_exist(config):
         DiffiosConfig(config, ignores="alt_ignore_file")
 
 
-def test_ignore_filename_is_False_if_ignores_is_False(config):
-    assert DiffiosConfig(config, ignores=False).ignore_filename is False
+def test_ignore_filename_is_None_if_ignores_is_False(config):
+    assert DiffiosConfig(config, ignores=False).ignore_filename is None
 
 
-def test_ignore_filename_is_False_if_ignores_is_empty_list(config):
-    assert DiffiosConfig(config, ignores=[]).ignore_filename is False
+def test_ignore_filename_is_None_if_ignores_is_empty_list(config):
+    assert DiffiosConfig(config, ignores=[]).ignore_filename is None
 
 
-def test_ignore_filename_is_False_if_ignores_is_empty_string(config):
-    assert DiffiosConfig(config, ignores="").ignore_filename is False
+def test_ignore_filename_is_None_if_ignores_is_empty_string(config):
+    assert DiffiosConfig(config, ignores="").ignore_filename is None
 
 
-def test_ignore_filename_is_False_if_ignores_is_zero(config):
-    assert DiffiosConfig(config, ignores=0).ignore_filename is False
+def test_ignore_filename_is_None_if_ignores_is_zero(config):
+    assert DiffiosConfig(config, ignores=0).ignore_filename is None
 
 
 def test_config_filename(dc, config):
@@ -85,3 +76,22 @@ def test_ignored(dc, baseline_partition):
 def test_recorded(dc, baseline_partition):
     expected = baseline_partition.recorded
     assert expected == dc.recorded
+
+
+def test_parent_line_is_ignored():
+    config = ['hostname ROUTER']
+    ignores = ['hostname']
+    d = DiffiosConfig(config=config, ignores=ignores)
+    assert d.config == []
+
+
+def test_child_line_is_ignored():
+    config = [
+        'interface FastEthernet0/1',
+        ' description [Link to Core]',
+        ' ip address 192.168.0.1 255.255.255.0'
+    ]
+    ignores = [' description']
+    d = DiffiosConfig(config=config, ignores=ignores)
+    assert d.config == ['interface FastEthernet0/1',
+                        ' ip address 192.168.0.1 255.255.255.0']

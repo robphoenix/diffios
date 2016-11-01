@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from collections import namedtuple
+import os
+import sys
 import pytest
 
+sys.path.append(os.path.abspath("."))
+from diffios import DiffiosConfig
 
 Partition = namedtuple("Partition", "ignored recorded")
+
+
+@pytest.fixture
+def config():
+    configs_dir = os.path.abspath(os.path.join("tests", "configs"))
+    return os.path.join(configs_dir, "baseline.conf")
+
+
+@pytest.fixture
+def dc():
+    return DiffiosConfig(config())
 
 
 @pytest.fixture

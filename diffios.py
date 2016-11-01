@@ -17,22 +17,34 @@ PARTIALS = [
 
 class DiffiosConfig(object):
 
-    """TODO: Docstring for DiffiosConf. """
+    """DiffiosConfig prepares a Cisco IOS Config to diff.
 
-    def __init__(self, config, ignores=None):
-        """TODO: Docstring for __init__.
+    DiffiosConfig takes a Cisco IOS config, as a file or a
+    list, extracts the device hostname, removes any invalid
+    lines, such as comments, breaks the config into a
+    hierarchical block structure and partitions the config
+    according to a list of lines to ignore.
 
-        Args:
-            config_filename (TODO): TODO
+    Attributes:
+        ignore_filename (str): None or Absolute path of
+            ignores file, if being used
+        config_filename (str): None or Absolute path of
+            config file, if being used
+        ignores (list): None or list of lines to ignore
+        config (list): None or list of config lines with
+            invalid lines removed
 
-        Kwargs:
-            ignore_filename (TODO): TODO
+    Kwargs:
+        config (str|list): Path to config file, or list
+            containing lines of config
+        ignores (str|list): Path to ignores file, or list
+            containing lines to ignore
 
-        Returns: TODO
+    """
 
-        """
-        self.ignore_filename = False
-        self.config_filename = False
+    def __init__(self, config=None, ignores=None):
+        self.ignore_filename = None
+        self.config_filename = None
         self.ignores = None
         self.config = None
 
