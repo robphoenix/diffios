@@ -82,7 +82,8 @@ class DiffiosConfig(object):
         """
         return [l.rstrip() for l in lines if self._valid_line(l)]
 
-    def _valid_line(self, line):
+    @staticmethod
+    def _valid_line(line):
         """TODO: Docstring for _valid_line.
 
         Args:
@@ -94,7 +95,8 @@ class DiffiosConfig(object):
         lstrip = line.strip()
         return len(lstrip) > 0 and not lstrip.startswith("!")
 
-    def _group_into_blocks(self, config):
+    @staticmethod
+    def _group_into_blocks(config):
         """TODO: Docstring for _group_into_blocks.
 
         Args:
@@ -259,7 +261,8 @@ class DiffiosDiff(object):
                     changes.append(dynamic[dynamic_index])
         return sorted(changes)
 
-    def _format_changes(self, data):
+    @staticmethod
+    def _format_changes(data):
         """TODO: Docstring for _format_changes.
 
         Args:
