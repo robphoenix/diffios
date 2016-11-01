@@ -10,6 +10,6 @@
 ```
 
 
-Diff changes between Cisco device configuration and a candidate configuration.
+Diff changes between Cisco device configurations.
 
 minimum python version 2.7, 3.3
