@@ -168,7 +168,7 @@ class DiffiosConfig(object):
                         else:
                             ignored.append(block[j])
                             block[j] = ""
-        recorded = [line for line in config_blocks if line]
+        recorded = [[line for line in block if line] for block in config_blocks if block]
         return Partition(ignored, recorded)
 
     @property
