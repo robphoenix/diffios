@@ -36,9 +36,9 @@ class DiffiosConfig(object):
         self.ignores = None
         self.config = None
 
-        if ignores is None:
-            if os.path.exists(os.path.join(os.getcwd(), "diffios_ignore")):
-                ignores = os.path.join(os.getcwd(), "diffios_ignore")
+        diffios_ignore_exists = os.path.exists(os.path.join(os.getcwd(), "diffios_ignore"))
+        if ignores is None and diffios_ignore_exists:
+            ignores = os.path.join(os.getcwd(), "diffios_ignore")
 
         if bool(ignores):
             if isinstance(ignores, list):
@@ -243,9 +243,8 @@ class DiffiosDiff(object):
         head = [line[0] for line in static]
         changes = []
         for dynamic_index, dynamic_block in enumerate(translated_dynamic):
-            if len(dynamic_block) == 1:
-                if dynamic_block not in translated_static:
-                    changes.append(dynamic[dynamic_index])
+            if len(dynamic_block) == 1 and dynamic_block not in translated_static:
+                changes.append(dynamic[dynamic_index])
             else:
                 first_line = dynamic_block[0]
                 if first_line in head:
