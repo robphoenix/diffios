@@ -105,3 +105,28 @@ def test_child_line_is_ignored():
     assert d.recorded == [['interface FastEthernet0/1',
                            ' ip address 192.168.0.1 255.255.255.0']]
     assert d.ignored == [' description **Link to Core**']
+
+
+def test_whole_block_is_ignored():
+    config = [
+        'hostname ROUTER',
+        '!',
+        'interface FastEthernet0/1',
+        ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0',
+        '!'
+    ]
+    ignores = ['fastethernet0/1']
+    d = DiffiosConfig(config=config, ignores=ignores)
+    assert d.config == [
+        'hostname ROUTER',
+        'interface FastEthernet0/1',
+        ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0',
+    ]
+    assert d.ignored == [[
+        'interface FastEthernet0/1',
+        ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0',
+    ]]
+    assert d.recorded == [['hostname ROUTER']]
