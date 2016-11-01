@@ -79,21 +79,29 @@ def test_recorded(dc, baseline_partition):
 
 
 def test_parent_line_is_ignored():
-    config = ['hostname ROUTER']
+    config = ['!', 'hostname ROUTER']
     ignores = ['hostname']
     d = DiffiosConfig(config=config, ignores=ignores)
+    assert d.config == ['hostname ROUTER']
     assert d.recorded == []
     assert d.ignored == [['hostname ROUTER']]
 
 
 def test_child_line_is_ignored():
     config = [
+        '!',
+        'interface FastEthernet0/1',
+        ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0',
+        '!'
+    ]
+    ignores = [' description']
+    d = DiffiosConfig(config=config, ignores=ignores)
+    assert d.config == [
         'interface FastEthernet0/1',
         ' description **Link to Core**',
         ' ip address 192.168.0.1 255.255.255.0'
     ]
-    ignores = [' description']
-    d = DiffiosConfig(config=config, ignores=ignores)
     assert d.recorded == [['interface FastEthernet0/1',
                            ' ip address 192.168.0.1 255.255.255.0']]
     assert d.ignored == [' description **Link to Core**']
