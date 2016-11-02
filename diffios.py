@@ -51,13 +51,6 @@ class DiffiosConfig(object):
     ... 'hostname',
     ... '^ description']
     >>> conf = DiffiosConfig(config=config, ignores=ignores)
-    >>> conf.ignore_filename
-    >>> conf.config_filename
-    >>> conf.ignores
-    ['hostname', '^ description']
-    >>> conf.config
-    ['hostname ROUTER', 'interface FastEthernet0/1', \
-' description **Link to Core**', ' ip address 192.168.0.1 255.255.255.0']
     >>> conf.ignored
     [['hostname ROUTER'], [' description **Link to Core**']]
     >>> conf.recorded
@@ -66,48 +59,38 @@ class DiffiosConfig(object):
     """
 
     def __init__(self, config=None, ignores=None):
-        self.ignore_filename = None
-        self.config_filename = None
-        self.ignores = None
+        self._src_ignores = ignores or os.path.join(os.getcwd(), "diffios_ignore")
+        self._src_config = config
         self.config = None
+        self.ignores = None
 
-        diffios_ignore_exists = os.path.exists(os.path.join(os.getcwd(), "diffios_ignore"))
-        if ignores is None and diffios_ignore_exists:
-            ignores = os.path.join(os.getcwd(), "diffios_ignore")
-
-        if bool(ignores):
-            if isinstance(ignores, list):
-                self.ignores = ignores
-            elif os.path.isfile(os.path.abspath(ignores)):
-                try:
-                    f = open(os.path.abspath(ignores))
-                    self.ignores = [l.strip().lower() for l in f.readlines()]
-                    f.close()
-                except IOError:
-                    print("[FATAL] Diffios could not open '{}".format(config))
-                    raise RuntimeError
-                else:
-                    self.ignore_filename = ignores
-            else:
-                raise RuntimeError(
-                    ("[FATAL] DiffiosConfig() received an "
-                     "invalid argument: ignores={}\n").format(ignores))
-
-        if isinstance(config, list):
-            self.config = self._remove_invalid_lines(config)
-        elif os.path.isfile(os.path.abspath(config)):
+        if isinstance(self._src_ignores, list):
+            self.ignores = self._src_ignores
+        elif os.path.isfile(self._src_ignores):
             try:
-                with open(os.path.abspath(config)) as f:
-                    self.config = self._remove_invalid_lines(f.readlines())
+                with open(self._src_ignores) as f:
+                    self.ignores = [l.strip().lower() for l in f.readlines()]
             except IOError:
-                print("[FATAL] Diffios could not open '{}".format(config))
+                print("Diffios could not open '{}".format(self._src_ignores))
                 raise RuntimeError
-            else:
-                self.config_filename = config
         else:
             raise RuntimeError(
                 ("[FATAL] DiffiosConfig() received an "
-                    "invalid argument: config={}\n").format(config))
+                    "invalid argument: ignores={}\n").format(self._src_ignores))
+
+        if isinstance(self._src_config, list):
+            self.config = self._remove_invalid_lines(self._src_config)
+        elif os.path.isfile(self._src_config):
+            try:
+                with open(self._src_config) as f:
+                    self.config = self._remove_invalid_lines(f.readlines())
+            except IOError:
+                print("Diffios could not open '{}".format(self._src_config))
+                raise RuntimeError
+        else:
+            raise RuntimeError(
+                ("[FATAL] DiffiosConfig() received an "
+                    "invalid argument: config={}\n").format(self._src_config))
 
     def _remove_invalid_lines(self, lines):
         """TODO: Docstring for _remove_invalid_lines.
