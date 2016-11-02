@@ -242,8 +242,7 @@ class CheckConfig(object):
             self.present.append(self.parent)
         elif not self.children:
             self.not_present.append(self.parent)
-        else:
-            if self.parent in self._parent_child_config_dict().keys():
+        elif self.parent in self._parent_child_config_dict().keys():
                 self.present.append(self.parent)
                 config_children = self._parent_child_config_dict()[self.parent]
                 for i, child in enumerate(self.children):
@@ -254,7 +253,6 @@ class CheckConfig(object):
                         self.not_present.append(child)
                     else:
                         self.not_present.append(child)
-
 
 
 class DiffiosDiff(object):
