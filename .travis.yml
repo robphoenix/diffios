@@ -10,6 +10,10 @@ matrix:
   allow_failures:
     - "nightly"
 
+branches:
+  only:
+    - master
+
 install: pip install -r requirements.txt
 
 before_script: flake8
