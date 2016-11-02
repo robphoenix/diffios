@@ -213,9 +213,9 @@ class DiffiosConfig(object):
         return self._partition().recorded
 
 
-class CompareBlock(object):
+class CheckConfig(object):
 
-    """Docstring for CompareBlock. """
+    """Docstring for CheckConfig. """
 
     def __init__(self, block, config):
         """TODO: to be defined1.
@@ -228,10 +228,33 @@ class CompareBlock(object):
         """
         self._block = block
         self._config = config
+        self.present = []
+        self.not_present = []
+        self.parent = self._block[0]
+        self.children = self._block[1:]
+        self.check()
 
-    @property
-    def present(self):
-        return self._block in self._config
+    def _parent_child_config_dict(self):
+        return {el[0]: el[1:] for el in self._config}
+
+    def check(self):
+        if not self.children and self._block in self._config:
+            self.present.append(self.parent)
+        elif not self.children:
+            self.not_present.append(self.parent)
+        else:
+            if self.parent in self._parent_child_config_dict().keys():
+                self.present.append(self.parent)
+                config_children = self._parent_child_config_dict()[self.parent]
+                for i, child in enumerate(self.children):
+                    if child in config_children:
+                        self.present.append(child)
+                    elif i == 0:
+                        self.not_present.append(self.parent)
+                        self.not_present.append(child)
+                    else:
+                        self.not_present.append(child)
+
 
 
 class DiffiosDiff(object):
