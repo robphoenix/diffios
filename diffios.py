@@ -161,19 +161,18 @@ class DiffiosConfig(object):
 
         """
         Partition = namedtuple("Partition", "ignored recorded")
-        ignore = self.ignores
         config_blocks = self._group_into_blocks(self.config)
         ignored = []
         for i, block in enumerate(config_blocks):
             for j, line in enumerate(block):
-                for line_to_ignore in ignore:
-                    if re.findall(line_to_ignore, line.lower()):
-                        if j == 0:
-                            ignored.append(config_blocks[i])
-                            config_blocks[i] = []
-                        else:
-                            ignored.append([block[j]])
-                            block[j] = ""
+                for line_to_ignore in self.ignores:
+                    match = re.findall(line_to_ignore, line.lower())
+                    if match and j == 0:
+                        ignored.append(config_blocks[i])
+                        config_blocks[i] = []
+                    elif match:
+                        ignored.append([block[j]])
+                        block[j] = ""
         recorded = [[line for line in block if line] for block in config_blocks if block]
         return Partition(ignored, recorded)
 
