@@ -213,6 +213,27 @@ class DiffiosConfig(object):
         return self._partition().recorded
 
 
+class CompareBlock(object):
+
+    """Docstring for CompareBlock. """
+
+    def __init__(self, block, config):
+        """TODO: to be defined1.
+
+        Args:
+            block (TODO): TODO
+            config (TODO): TODO
+
+
+        """
+        self._block = block
+        self._config = config
+
+    @property
+    def present(self):
+        return self._block in self._config
+
+
 class DiffiosDiff(object):
 
     """Docstring for DiffiosDiff. """
