@@ -125,22 +125,30 @@ class DiffiosConfig(object):
             raise RuntimeError(("[FATAL] DiffiosConfig() received an "
                                 "invalid argument: config={}\n").format(data))
 
-    def _remove_invalid_lines(self, lines):
-        """TODO: Docstring for _remove_invalid_lines.
+    def _remove_invalid_lines(self, config):
+        """Remove invalid lines from a given config.
 
-        Returns: TODO
+        Args:
+            config (list): Config as a list of lines.
+
+        Returns:
+            list: Only valid lines in given config.
 
         """
-        return [l.rstrip() for l in lines if self._valid_line(l)]
+        return [l.rstrip() for l in config if self._valid_line(l)]
 
     @staticmethod
     def _valid_line(line):
-        """TODO: Docstring for _valid_line.
+        """Assert whether a given line is valid.
+
+        Lines considered invalid are those which are empty
+        or begin with a '!' to indicate a comment.
 
         Args:
-            line (TODO): TODO
+            line (str): A single line from a config.
 
-        Returns: TODO
+        Returns:
+            bool: True if line is valid, False if not.
 
         """
         lstrip = line.strip()
@@ -148,12 +156,27 @@ class DiffiosConfig(object):
 
     @staticmethod
     def _group_into_blocks(config):
-        """TODO: Docstring for _group_into_blocks.
+        """Group config into hierarchical blocks.
+
+        Blocks are defined as a parent/child relationship,
+        where children lines start with a ' ', and parents
+        are the immediately preceding line that doesn't start
+        with a ' '. Blocks can be single lines where there
+        is no children. Returns the blocks sorted.
+
+        Example Blocks:
+            interface FastEthernet0/1
+             ip address 192.168.0.1 255.255.255.0
+             no shutdown
+
+            hostname ROUTER
 
         Args:
-            config (TODO): TODO
+            config (list): config as a list of lines.
 
-        Returns: TODO
+        Returns:
+            list: config as a sorted list of lists, each list
+                representing a hierarchical block of config.
 
         """
         current_group, groups = [], []
@@ -169,28 +192,35 @@ class DiffiosConfig(object):
 
     @property
     def config_blocks(self):
-        """TODO: Docstring for blocks.
+        """The config as sorted list of hierarchical blocks.
 
-        Returns: TODO
+        Returns:
+            list: self.config as a sorted list of lists, each list
+                representing a hierarchical block of config.
 
         """
         return self._group_into_blocks(self.config)
 
     @property
     def hostname(self):
-        """TODO: Docstring for _hostname.
+        """The hostname of the given config.
 
-        Returns: TODO
+        Returns:
+            str: hostname of the given config
+                or None if not found.
 
         """
         for line in self.config:
             if "hostname" in line.lower():
                 return line.split()[1]
+        return None
 
     def _partition(self):
-        """TODO: Docstring for partition.
+        """Partition lines to ignore out from the config.
 
-        Returns: TODO
+        Returns:
+            namedtuple: list of ignored lines and list of
+                recorded (not ignored) lines
 
         """
         Partition = namedtuple("Partition", "ignored recorded")
@@ -211,18 +241,20 @@ class DiffiosConfig(object):
 
     @property
     def ignored(self):
-        """TODO: Docstring for ignored.
+        """Lines in the config that are being ignored.
 
-        Returns: TODO
+        Returns:
+            list: ignored lines
 
         """
         return self._partition().ignored
 
     @property
     def recorded(self):
-        """TODO: Docstring for recorded.
+        """Lines in the config that are being recorded (not ignored).
 
-        Returns: TODO
+        Returns:
+            list: recorded (not ignored) lines
 
         """
         return self._partition().recorded
