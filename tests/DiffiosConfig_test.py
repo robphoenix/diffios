@@ -17,7 +17,8 @@ def test_raises_error_if_config_not_given():
         DiffiosConfig()
 
 
-def test_raises_error_if_provided_ignore_file_does_not_exist(config):
+def test_raises_error_if_provided_ignore_file_does_not_exist():
+    config = ['hostname ROUTER']
     with pytest.raises(RuntimeError):
         DiffiosConfig(config, ignores='file_that_does_not_exist')
 
@@ -34,7 +35,8 @@ def test_raises_error_if_not_valid_config_file():
         DiffiosConfig('file_that_does_not_exist')
 
 
-def test_uses_default_ignores_file_if_it_exists(config):
+def test_uses_default_ignores_file_if_it_exists():
+    config = ['hostname ROUTER']
     with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
         ignores = [l.strip().lower() for l in i]
     assert DiffiosConfig(config).ignores == ignores
@@ -46,11 +48,37 @@ def test_config(dc, config):
     assert expected, dc.config
 
 
-def test_hostname(dc):
-    assert "BASELINE01" == dc.hostname
+def test_hostname_when_present():
+    config = ['!', 'hostname ROUTER', 'ip default-gateway 192.168.0.1']
+    assert "ROUTER" == DiffiosConfig(config).hostname
 
 
-def test_blocks(dc, baseline_blocks):
+def test_hostname_is_None_when_not_present():
+    config = ['!', 'ip default-gateway 192.168.0.1']
+    assert DiffiosConfig(config).hostname is None
+
+
+def test_config_blocks_with_list():
+    config = [
+        'interface Vlan1',
+        ' no ip address',
+        ' shutdown',
+        'hostname ROUTER',
+        'interface Vlan2',
+        ' ip address 192.168.0.1 255.255.255.0',
+        ' no shutdown']
+    blocks = sorted([
+        ['interface Vlan1', ' no ip address', ' shutdown'],
+        ['hostname ROUTER'],
+        ['interface Vlan2',
+         ' ip address 192.168.0.1 255.255.255.0',
+         ' no shutdown']])
+    assert blocks == DiffiosConfig(config).config_blocks
+
+
+# @mock.patch('diffios.os.path')
+def test_config_blocks_with_file(dc, baseline_blocks):
+    # mock_path.isfile.return_value = True
     assert baseline_blocks == dc.config_blocks
 
 
@@ -61,11 +89,13 @@ def test_ignore_lines(dc):
 
 
 def test_ignored(dc, baseline_partition):
+    pytest.skip()
     expected = baseline_partition.ignored
     assert expected == dc.ignored
 
 
 def test_recorded(dc, baseline_partition):
+    pytest.skip()
     expected = baseline_partition.recorded
     assert expected == dc.recorded
 
