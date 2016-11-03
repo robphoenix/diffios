@@ -123,7 +123,7 @@ class DiffiosConfig(object):
                 with open(data) as fin:
                     return fin.readlines()
             except IOError:
-                raise RuntimeError(("DiffiosConfig could not open '{}".format(data)))
+                raise RuntimeError(("DiffiosConfig could not open '{}'".format(data)))
         else:
             raise RuntimeError(("[FATAL] DiffiosConfig() received an "
                                 "invalid argument: config={}\n").format(data))

@@ -23,11 +23,11 @@ def test_raises_error_if_provided_ignore_file_does_not_exist():
         DiffiosConfig(config, ignores='file_that_does_not_exist')
 
 
-@mock.patch('diffios.os.path')
-def test_ignores_is_empty_list_if_no_default_ignore_file(mock_path):
-    mock_path.exists.return_value = False
-    config = ['hostname ROUTER']
-    assert DiffiosConfig(config).ignores == []
+def test_ignores_is_empty_list_if_no_default_ignore_file():
+    with mock.patch('diffios.os.path') as mock_path:
+        mock_path.exists.return_value = False
+        config = ['hostname ROUTER']
+        assert DiffiosConfig(config).ignores == []
 
 
 def test_raises_error_if_not_valid_config_file():
@@ -76,10 +76,16 @@ def test_config_blocks_with_list():
     assert blocks == DiffiosConfig(config).config_blocks
 
 
-# @mock.patch('diffios.os.path')
-def test_config_blocks_with_file(dc, baseline_blocks):
-    # mock_path.isfile.return_value = True
-    assert baseline_blocks == dc.config_blocks
+def test_config_blocks_with_file(baseline, baseline_blocks):
+    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+        mock_isfile.return_value = True
+        config_data = mock.mock_open(read_data=baseline)
+        with mock.patch('diffios.open', config_data) as mock_open:
+            # ignores must be empty for this test otherwise
+            # the open call to the default ignores file will interfere
+            actual = DiffiosConfig('baseline.conf', ignores=[]).config_blocks
+            mock_open.assert_called_once_with('baseline.conf')
+            assert baseline_blocks == actual
 
 
 def test_ignore_lines(dc):
