@@ -30,11 +30,11 @@ with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
             ignore_file=IGNORE_FILE
         )
         print("{0} of {1}: {2} => {3}".format(
-            i, len(files), fin, os.path.basename(diff.baseline.config_filename)))
+            i, len(files), fin, os.path.basename(BASELINE_FILE)))
         csvwriter.writerow([
-            os.path.basename(diff.comparison.config_filename),
+            fin,
             diff.comparison.hostname,
-            os.path.basename(diff.baseline.config_filename),
+            os.path.basename(BASELINE_FILE),
             diff.pprint_additional,
             diff.pprint_missing
         ])
