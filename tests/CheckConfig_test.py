@@ -95,4 +95,3 @@ def test_multiple_line_block_is_same_as_config():
     # assert cb.present is True
 
 
-# def test_True_when_

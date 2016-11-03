@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import re
@@ -58,7 +58,7 @@ class DiffiosConfig(object):
 
     """
 
-    def __init__(self, config=None, ignores=None):
+    def __init__(self, config, ignores=None):
         self._src_ignores = ignores or os.path.join(os.getcwd(), "diffios_ignore")
         self._src_config = config
         self.config = None
@@ -205,7 +205,6 @@ class CheckConfig(object):
         Args:
             block (TODO): TODO
             config (TODO): TODO
-
 
         """
         self._block = block
