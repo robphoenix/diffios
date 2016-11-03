@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+from unittest import mock
 
 import pytest
 
@@ -18,12 +19,25 @@ def test_raises_error_if_config_not_given():
 
 def test_raises_error_if_provided_ignore_file_does_not_exist(config):
     with pytest.raises(RuntimeError):
-        DiffiosConfig(config, ignores="does_not_exist")
+        DiffiosConfig(config, ignores='file_that_does_not_exist')
 
 
-def test_ignores_is_empty_list_if_no_default_ignore_file():
+@mock.patch('diffios.os.path')
+def test_ignores_is_empty_list_if_no_default_ignore_file(mock_path):
+    mock_path.exists.return_value = False
     config = ['hostname ROUTER']
     assert DiffiosConfig(config).ignores == []
+
+
+def test_raises_error_if_not_valid_config_file():
+    with pytest.raises(RuntimeError):
+        DiffiosConfig('file_that_does_not_exist')
+
+
+def test_uses_default_ignores_file_if_it_exists(config):
+    with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
+        ignores = [l.strip().lower() for l in i]
+    assert DiffiosConfig(config).ignores == ignores
 
 
 def test_config(dc, config):
