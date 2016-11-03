@@ -48,11 +48,24 @@ class DiffiosConfig(object):
     >>> ignores = [
     ... 'hostname',
     ... '^ description']
-    >>> conf = DiffiosConfig(config=config, ignores=ignores)
+    >>> conf = DiffiosConfig(config, ignores=ignores)
+    >>> conf.config
+    ['hostname ROUTER', \
+'interface FastEthernet0/1', \
+' description **Link to Core**', \
+' ip address 192.168.0.1 255.255.255.0']
+    >>> conf.ignores
+    ['hostname', '^ description']
+    >>> conf.config_blocks
+    [['hostname ROUTER'], \
+['interface FastEthernet0/1', \
+' description **Link to Core**', \
+' ip address 192.168.0.1 255.255.255.0']]
     >>> conf.ignored
     [['hostname ROUTER'], [' description **Link to Core**']]
     >>> conf.recorded
-    [['interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.0']]
+    [['interface FastEthernet0/1', \
+' ip address 192.168.0.1 255.255.255.0']]
 
     """
 
