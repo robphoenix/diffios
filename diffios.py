@@ -70,7 +70,10 @@ class DiffiosConfig(object):
     """
 
     def __init__(self, config, ignores=None):
-        ignores = ignores or os.path.join(os.getcwd(), "diffios_ignore")
+        if ignores is None and os.path.exists(os.path.join(os.getcwd(), 'diffios_ignore')):
+            ignores = os.path.join(os.getcwd(), "diffios_ignore")
+        elif ignores is None:
+            ignores = []
         self.config = self._config(config)
         self.ignores = self._ignores(ignores)
 

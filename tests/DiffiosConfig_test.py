@@ -11,9 +11,14 @@ sys.path.append(os.path.abspath("."))
 from diffios import DiffiosConfig
 
 
+def test_raises_error_if_config_not_given():
+    with pytest.raises(TypeError):
+        DiffiosConfig()
+
+
 def test_raises_error_if_ignore_file_does_not_exist(config):
     with pytest.raises(RuntimeError):
-        DiffiosConfig(config, ignores="alt_ignore_file")
+        DiffiosConfig(config, ignores="does_not_exist")
 
 
 def test_config(dc, config):
