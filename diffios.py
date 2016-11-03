@@ -26,19 +26,17 @@ class DiffiosConfig(object):
     according to a list of lines to ignore.
 
     Attributes:
-        ignore_filename (str): None or Absolute path of
-            ignores file, if being used
-        config_filename (str): None or Absolute path of
-            config file, if being used
-        ignores (list): None or list of lines to ignore
-        config (list): None or list of config lines with
-            invalid lines removed
+        ignores (list): List of lines to ignore
+        config (list): List of valid config lines
 
-    Kwargs:
+    Args:
         config (str|list): Path to config file, or list
             containing lines of config
+
+    Kwargs:
         ignores (str|list): Path to ignores file, or list
-            containing lines to ignore
+            containing lines to ignore. Defaults to ignores
+            file in current working directory.
 
     >>> config = [
     ... '!',
@@ -59,38 +57,60 @@ class DiffiosConfig(object):
     """
 
     def __init__(self, config, ignores=None):
-        self._src_ignores = ignores or os.path.join(os.getcwd(), "diffios_ignore")
-        self._src_config = config
-        self.config = None
-        self.ignores = None
+        ignores = ignores or os.path.join(os.getcwd(), "diffios_ignore")
+        self.config = self._config(config)
+        self.ignores = self._ignores(ignores)
 
-        if isinstance(self._src_ignores, list):
-            self.ignores = self._src_ignores
-        elif os.path.isfile(self._src_ignores):
-            try:
-                with open(self._src_ignores) as f:
-                    self.ignores = [l.strip().lower() for l in f.readlines()]
-            except IOError:
-                print("Diffios could not open '{}".format(self._src_ignores))
-                raise RuntimeError
-        else:
-            raise RuntimeError(
-                ("[FATAL] DiffiosConfig() received an "
-                    "invalid argument: ignores={}\n").format(self._src_ignores))
+    def _config(self, data):
+        """Transforms given config data into usable format,
+            with only valid lines.
 
-        if isinstance(self._src_config, list):
-            self.config = self._remove_invalid_lines(self._src_config)
-        elif os.path.isfile(self._src_config):
+        Args:
+            data (list|file): config as either list or file.
+
+        Returns:
+            list: The config as a list of valid lines.
+
+        """
+        return self._remove_invalid_lines(self._check_data(data))
+
+    def _ignores(self, data):
+        """Transforms given ignores data into usable format.
+
+        Args:
+            ignores (list|file): ignores as either list or file.
+
+        Returns:
+            list: Lines to ignore.
+
+        """
+        return [l.strip().lower() for l in self._check_data(data)]
+
+    def _check_data(self, data):
+        """Check type of data and convert it if necessary.
+
+        Args:
+            data (list|file): input data as either list or file.
+
+        Returns:
+            list: The input data as a list.
+
+        Raises:
+            RuntimeError: If file cannot be opened or given data
+                is not a list or file.
+
+        """
+        if isinstance(data, list):
+            return data
+        elif os.path.isfile(data):
             try:
-                with open(self._src_config) as f:
-                    self.config = self._remove_invalid_lines(f.readlines())
+                with open(data) as fin:
+                    return fin.readlines()
             except IOError:
-                print("Diffios could not open '{}".format(self._src_config))
-                raise RuntimeError
+                raise RuntimeError(("DiffiosConfig could not open '{}".format(data)))
         else:
-            raise RuntimeError(
-                ("[FATAL] DiffiosConfig() received an "
-                    "invalid argument: config={}\n").format(self._src_config))
+            raise RuntimeError(("[FATAL] DiffiosConfig() received an "
+                                "invalid argument: config={}\n").format(data))
 
     def _remove_invalid_lines(self, lines):
         """TODO: Docstring for _remove_invalid_lines.
