@@ -16,9 +16,14 @@ def test_raises_error_if_config_not_given():
         DiffiosConfig()
 
 
-def test_raises_error_if_ignore_file_does_not_exist(config):
+def test_raises_error_if_provided_ignore_file_does_not_exist(config):
     with pytest.raises(RuntimeError):
         DiffiosConfig(config, ignores="does_not_exist")
+
+
+def test_ignores_is_empty_list_if_no_default_ignore_file():
+    config = ['hostname ROUTER']
+    assert DiffiosConfig(config).ignores == []
 
 
 def test_config(dc, config):
@@ -36,7 +41,7 @@ def test_blocks(dc, baseline_blocks):
 
 
 def test_ignore_lines(dc):
-    ignore_file = open("diffios_ignore").readlines()
+    ignore_file = open("test_diffios_ignore").readlines()
     expected = [l.strip().lower() for l in ignore_file]
     assert expected == dc.ignores
 

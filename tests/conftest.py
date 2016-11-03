@@ -18,8 +18,13 @@ def config():
 
 
 @pytest.fixture
+def ignores():
+    return os.path.join(os.getcwd(), 'test_diffios_ignore')
+
+
+@pytest.fixture
 def dc():
-    return DiffiosConfig(config())
+    return DiffiosConfig(config(), ignores=ignores())
 
 
 @pytest.fixture
