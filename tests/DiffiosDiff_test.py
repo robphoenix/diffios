@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath("."))
 from diffios import DiffiosDiff
 
 
-def test_different_vlan_interface_config():
+def test_different_vlan_interface_config(ignores):
     baseline = [
         'hostname BASELINE',
         'interface Vlan1',
@@ -28,7 +28,7 @@ def test_different_vlan_interface_config():
         ' no ip address',
         ' shutdown'
     ]]
-    diff = DiffiosDiff(baseline=baseline, comparison=comparison)
+    diff = DiffiosDiff(baseline=baseline, comparison=comparison, ignore_file=ignores)
     assert expected_additional == diff.additional
     assert expected_missing == diff.missing
 
