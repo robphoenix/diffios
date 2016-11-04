@@ -280,7 +280,7 @@ class DiffiosDiff(object):
         for dynamic_index, dynamic_block in enumerate(translated_dynamic):
             if len(dynamic_block) == 1 and dynamic_block not in translated_static:
                 changes.append(dynamic[dynamic_index])
-            else:
+            elif len(dynamic_block) > 1:
                 first_line = dynamic_block[0]
                 if first_line in head:
                     static_block = translated_static[head.index(first_line)]
