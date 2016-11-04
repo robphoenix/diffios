@@ -218,8 +218,43 @@ class DiffiosConfig(object):
                 return line.split()[1]
         return None
 
+    def _ignore_line(self, line):
+        """Check if a line should be ignored.
+
+        Args:
+            line (str): line to check
+
+        Returns:
+            bool: True if line should be ignored,
+                False otherwise.
+
+        """
+        for line_to_ignore in self.ignores:
+            if re.search(line_to_ignore, line.lower()):
+                return True
+
+    def _check_block(self, block):
+        """Check for any lines to be ignored in a given block.
+
+        Args:
+            block (list): A single hierarchical block of config
+
+        Returns:
+            tuple: ignored and recorded (not ignored) lines in block
+
+        """
+        ignored, recorded = [], []
+        for i, line in enumerate(block):
+            if self._ignore_line(line) and i == 0:
+                return (block, recorded)
+            elif self._ignore_line(line):
+                ignored.append(line)
+            else:
+                recorded.append(line)
+        return (ignored, recorded)
+
     def _partition(self):
-        """Partition lines to ignore out from the config.
+        """Partition out lines to ignore from the config.
 
         Returns:
             namedtuple: list of ignored lines and list of
@@ -228,18 +263,13 @@ class DiffiosConfig(object):
         """
         Partition = namedtuple("Partition", "ignored recorded")
         config_blocks = self._group_into_blocks(self.config)
-        ignored = []
-        for i, block in enumerate(config_blocks):
-            for j, line in enumerate(block):
-                for line_to_ignore in self.ignores:
-                    match = re.findall(line_to_ignore, line.lower())
-                    if match and j == 0:
-                        ignored.append(config_blocks[i])
-                        config_blocks[i] = []
-                    elif match:
-                        ignored.append([block[j]])
-                        block[j] = ""
-        recorded = [[line for line in block if line] for block in config_blocks if block]
+        ignored, recorded = [], []
+        for block in config_blocks:
+            ignore, record = self._check_block(block)
+            if ignore:
+                ignored.append(ignore)
+            if record:
+                recorded.append(record)
         return Partition(ignored, recorded)
 
     @property
