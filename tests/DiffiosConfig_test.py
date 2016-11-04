@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-from unittest import mock
+try:
+    from unittest import mock
+except ImportError:
+    from mock import mock
 
 import pytest
 
