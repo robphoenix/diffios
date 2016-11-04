@@ -7,13 +7,17 @@ python:
   - "3.5"
 
 matrix:
-    allow_failures:
-        - "nightly"
+  allow_failures:
+    - "nightly"
+
+branches:
+  only:
+    - master
 
 install: pip install -r requirements.txt
 
 before_script: flake8
 
-script: py.test
+script: pytest
 
 after_success: coveralls

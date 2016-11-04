@@ -17,28 +17,63 @@ PARTIALS = [
 
 class DiffiosConfig(object):
 
-    """TODO: Docstring for DiffiosConf. """
+    """DiffiosConfig prepares a Cisco IOS Config to diff.
 
-    def __init__(self, config, ignores=None):
-        """TODO: Docstring for __init__.
+    DiffiosConfig takes a Cisco IOS config, as a file or a
+    list, extracts the device hostname, removes any invalid
+    lines, such as comments, breaks the config into a
+    hierarchical block structure and partitions the config
+    according to a list of lines to ignore.
 
-        Args:
-            config_filename (TODO): TODO
+    Attributes:
+        ignore_filename (str): None or Absolute path of
+            ignores file, if being used
+        config_filename (str): None or Absolute path of
+            config file, if being used
+        ignores (list): None or list of lines to ignore
+        config (list): None or list of config lines with
+            invalid lines removed
 
-        Kwargs:
-            ignore_filename (TODO): TODO
+    Kwargs:
+        config (str|list): Path to config file, or list
+            containing lines of config
+        ignores (str|list): Path to ignores file, or list
+            containing lines to ignore
 
-        Returns: TODO
+    >>> config = [
+    ... '!',
+    ... 'hostname ROUTER',
+    ... '!',
+    ... 'interface FastEthernet0/1',
+    ... ' description **Link to Core**',
+    ... ' ip address 192.168.0.1 255.255.255.0']
+    >>> ignores = [
+    ... 'hostname',
+    ... '^ description']
+    >>> conf = DiffiosConfig(config=config, ignores=ignores)
+    >>> conf.ignore_filename
+    >>> conf.config_filename
+    >>> conf.ignores
+    ['hostname', '^ description']
+    >>> conf.config
+    ['hostname ROUTER', 'interface FastEthernet0/1', \
+' description **Link to Core**', ' ip address 192.168.0.1 255.255.255.0']
+    >>> conf.ignored
+    [['hostname ROUTER'], [' description **Link to Core**']]
+    >>> conf.recorded
+    [['interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.0']]
 
-        """
-        self.ignore_filename = False
-        self.config_filename = False
+    """
+
+    def __init__(self, config=None, ignores=None):
+        self.ignore_filename = None
+        self.config_filename = None
         self.ignores = None
         self.config = None
 
-        if ignores is None:
-            if os.path.exists(os.path.join(os.getcwd(), "diffios_ignore")):
-                ignores = os.path.join(os.getcwd(), "diffios_ignore")
+        diffios_ignore_exists = os.path.exists(os.path.join(os.getcwd(), "diffios_ignore"))
+        if ignores is None and diffios_ignore_exists:
+            ignores = os.path.join(os.getcwd(), "diffios_ignore")
 
         if bool(ignores):
             if isinstance(ignores, list):
@@ -82,7 +117,8 @@ class DiffiosConfig(object):
         """
         return [l.rstrip() for l in lines if self._valid_line(l)]
 
-    def _valid_line(self, line):
+    @staticmethod
+    def _valid_line(line):
         """TODO: Docstring for _valid_line.
 
         Args:
@@ -94,7 +130,8 @@ class DiffiosConfig(object):
         lstrip = line.strip()
         return len(lstrip) > 0 and not lstrip.startswith("!")
 
-    def _group_into_blocks(self, config):
+    @staticmethod
+    def _group_into_blocks(config):
         """TODO: Docstring for _group_into_blocks.
 
         Args:
@@ -152,9 +189,9 @@ class DiffiosConfig(object):
                             ignored.append(config_blocks[i])
                             config_blocks[i] = []
                         else:
-                            ignored.append(block[j])
+                            ignored.append([block[j]])
                             block[j] = ""
-        recorded = [line for line in config_blocks if line]
+        recorded = [[line for line in block if line] for block in config_blocks if block]
         return Partition(ignored, recorded)
 
     @property
@@ -241,9 +278,8 @@ class DiffiosDiff(object):
         head = [line[0] for line in static]
         changes = []
         for dynamic_index, dynamic_block in enumerate(translated_dynamic):
-            if len(dynamic_block) == 1:
-                if dynamic_block not in translated_static:
-                    changes.append(dynamic[dynamic_index])
+            if len(dynamic_block) == 1 and dynamic_block not in translated_static:
+                changes.append(dynamic[dynamic_index])
             else:
                 first_line = dynamic_block[0]
                 if first_line in head:
@@ -259,7 +295,8 @@ class DiffiosDiff(object):
                     changes.append(dynamic[dynamic_index])
         return sorted(changes)
 
-    def _format_changes(self, data):
+    @staticmethod
+    def _format_changes(data):
         """TODO: Docstring for _format_changes.
 
         Args:
