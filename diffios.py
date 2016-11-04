@@ -102,7 +102,8 @@ class DiffiosConfig(object):
         """
         return [l.strip().lower() for l in self._check_data(data)]
 
-    def _check_data(self, data):
+    @staticmethod
+    def _check_data(data):
         """Check type of data and convert it if necessary.
 
         Args:
