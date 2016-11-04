@@ -93,5 +93,3 @@ def test_multiple_line_block_is_same_as_config():
               # ['ip http secure-server']]
     # cb = CheckConfig(block, config)
     # assert cb.present is True
-
-
