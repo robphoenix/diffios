@@ -12,4 +12,4 @@
 
 Diff changes between Cisco device configurations.
 
-minimum python version 3.4
+minimum python version 2.7, 3.3
