@@ -20,10 +20,27 @@ def test_raises_error_if_config_not_given():
         DiffiosConfig()
 
 
+def test_raises_error_if_not_config_file_does_not_exist():
+    with pytest.raises(RuntimeError):
+        DiffiosConfig('file_that_does_not_exist')
+
+
+def test_raises_error_if_config_file_is_dir():
+    with pytest.raises(RuntimeError):
+        DiffiosConfig(os.getcwd())
+
+
 def test_raises_error_if_provided_ignore_file_does_not_exist():
     config = ['hostname ROUTER']
     with pytest.raises(RuntimeError):
         DiffiosConfig(config, ignores='file_that_does_not_exist')
+
+
+def test_uses_default_ignores_file_if_it_exists():
+    config = ['hostname ROUTER']
+    with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
+        ignores = [l.strip().lower() for l in i]
+    assert DiffiosConfig(config).ignores == ignores
 
 
 def test_ignores_is_empty_list_if_no_default_ignore_file():
@@ -33,16 +50,9 @@ def test_ignores_is_empty_list_if_no_default_ignore_file():
         assert DiffiosConfig(config).ignores == []
 
 
-def test_raises_error_if_not_valid_config_file():
-    with pytest.raises(RuntimeError):
-        DiffiosConfig('file_that_does_not_exist')
-
-
-def test_uses_default_ignores_file_if_it_exists():
+def test_ignores_is_empty_list_if_passed_empty_list():
     config = ['hostname ROUTER']
-    with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
-        ignores = [l.strip().lower() for l in i]
-    assert DiffiosConfig(config).ignores == ignores
+    assert DiffiosConfig(config, ignores=[]).ignores == []
 
 
 def test_config(dc, config):
