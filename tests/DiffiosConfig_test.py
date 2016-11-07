@@ -30,8 +30,10 @@ def test_raises_error_if_not_config_file_does_not_exist():
     """
     Should raise Runtime Error if given config file does not exist.
     """
-    with pytest.raises(RuntimeError):
-        DiffiosConfig('file_that_does_not_exist')
+    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+        mock_isfile.return_value = True
+        with pytest.raises(RuntimeError):
+            DiffiosConfig('file_that_does_not_exist')
 
 
 def test_raises_error_if_config_file_is_dir():
