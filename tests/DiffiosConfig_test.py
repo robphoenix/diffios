@@ -101,10 +101,23 @@ def test_config_blocks_with_file(baseline, baseline_blocks):
             assert baseline_blocks == actual
 
 
-def test_ignore_lines(dc):
-    ignore_file = open("test_diffios_ignore").readlines()
-    expected = [l.strip().lower() for l in ignore_file]
-    assert expected == dc.ignores
+def test_ignore_lines_from_file(ignores_file):
+    config = ['hostname ROUTER']
+    expected = [l.strip().lower() for l in open("test_diffios_ignore").readlines()]
+    config_data = mock.mock_open(read_data=ignores_file)
+    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+        mock_isfile.return_value = True
+        with mock.patch('diffios.open', config_data, create=True) as mock_open:
+            actual = DiffiosConfig(config, ignores='ignores_file').ignores
+            mock_open.assert_called_once_with('ignores_file')
+            assert expected == actual
+
+
+def test_ignore_lines_from_list(ignores_file):
+    config = ['hostname ROUTER']
+    expected = [l.strip().lower() for l in open("test_diffios_ignore").readlines()]
+    actual = DiffiosConfig(config, ignores=ignores_file.split('\n')).ignores
+    assert expected == actual
 
 
 def test_ignored(dc, baseline_partition):

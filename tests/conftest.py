@@ -73,7 +73,7 @@ end"""
 
 @pytest.fixture
 def baseline_config():
-    config = """version 15.0
+    content = """version 15.0
 no service pad
 service tcp-keepalives-in
 service tcp-keepalives-out
@@ -105,7 +105,28 @@ line vty 5 15
  exec-timeout 5 0
  transport input telnet ssh
 end"""
-    return config
+    return content
+
+
+@pytest.fixture
+def ignores_file():
+    content = """building configuration
+hostname
+serial number
+crypto pki trustpoint
+crypto pki certificate
+processor board
+reload
+uptime
+current configuration
+mac address
+Template Version
+System restarted at
+banner login
+banner motd
+^end$"""
+    return content
+
 
 
 @pytest.fixture
