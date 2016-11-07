@@ -16,27 +16,42 @@ from diffios import DiffiosConfig
 
 
 def test_raises_error_if_config_not_given():
+    """
+    Raise TypeError if no config passed to DiffiosConfig
+    """
     with pytest.raises(TypeError):
         DiffiosConfig()
 
 
 def test_raises_error_if_not_config_file_does_not_exist():
+    """
+    Raise Runtime Error if given config file does not exist.
+    """
     with pytest.raises(RuntimeError):
         DiffiosConfig('file_that_does_not_exist')
 
 
 def test_raises_error_if_config_file_is_dir():
+    """
+    Raise Runtime Error if config file is not a file.
+    """
     with pytest.raises(RuntimeError):
         DiffiosConfig(os.getcwd())
 
 
 def test_raises_error_if_provided_ignore_file_does_not_exist():
+    """
+    Raise Runtime Error if given ignores file does not exist.
+    """
     config = ['hostname ROUTER']
     with pytest.raises(RuntimeError):
         DiffiosConfig(config, ignores='file_that_does_not_exist')
 
 
 def test_uses_default_ignores_file_if_it_exists():
+    """
+    Use default ignores file if it exists.
+    """
     config = ['hostname ROUTER']
     with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
         ignores = [l.strip().lower() for l in i]
