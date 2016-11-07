@@ -103,11 +103,11 @@ def test_config_blocks_with_file(baseline, baseline_blocks):
 
 def test_ignore_lines_from_file(ignores_file):
     config = ['hostname ROUTER']
-    expected = [l.strip().lower() for l in open("test_diffios_ignore").readlines()]
-    config_data = mock.mock_open(read_data=ignores_file)
+    expected = ignores_file.lower().split('\n')
+    ignores_data = mock.mock_open(read_data=ignores_file)
     with mock.patch('diffios.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
-        with mock.patch('diffios.open', config_data, create=True) as mock_open:
+        with mock.patch('diffios.open', ignores_data, create=True) as mock_open:
             actual = DiffiosConfig(config, ignores='ignores_file').ignores
             mock_open.assert_called_once_with('ignores_file')
             assert expected == actual
@@ -115,21 +115,25 @@ def test_ignore_lines_from_file(ignores_file):
 
 def test_ignore_lines_from_list(ignores_file):
     config = ['hostname ROUTER']
-    expected = [l.strip().lower() for l in open("test_diffios_ignore").readlines()]
+    expected = ignores_file.lower().split('\n')
     actual = DiffiosConfig(config, ignores=ignores_file.split('\n')).ignores
     assert expected == actual
 
 
-def test_ignored(dc, baseline_partition):
-    pytest.skip()
-    expected = baseline_partition.ignored
-    assert expected == dc.ignored
+def test_ignored(ignores_file, baseline_config, ignored):
+    ignores = ignores_file.split('\n')
+    config = baseline_config.split('\n')
+    expected = ignored
+    actual = DiffiosConfig(config, ignores).ignored
+    assert expected == actual
 
 
-def test_recorded(dc, baseline_partition):
-    pytest.skip()
-    expected = baseline_partition.recorded
-    assert expected == dc.recorded
+def test_recorded(ignores_file, baseline_config, recorded):
+    ignores = ignores_file.split('\n')
+    config = baseline_config.split('\n')
+    expected = recorded
+    actual = DiffiosConfig(config, ignores).recorded
+    assert expected == actual
 
 
 def test_parent_line_is_ignored():

@@ -8,8 +8,6 @@ import pytest
 sys.path.append(os.path.abspath("."))
 from diffios import DiffiosConfig
 
-Partition = namedtuple("Partition", "ignored recorded")
-
 
 @pytest.fixture
 def config():
@@ -120,7 +118,7 @@ reload
 uptime
 current configuration
 mac address
-Template Version
+version
 System restarted at
 banner login
 banner motd
@@ -128,44 +126,89 @@ banner motd
     return content
 
 
-
 @pytest.fixture
 def baseline_blocks():
-    bb = [['boot-end-marker'],
-          ['boot-start-marker'],
-          ['end'],
-          ['hostname BASELINE01'],
-          ['interface FastEthernet0/1',
-           ' description Management',
-           ' switchport trunk native vlan 777',
-           ' switchport trunk allowed vlan 410,411,777',
-           ' switchport mode trunk',
-           ' switchport nonegotiate'],
-          ['ip domain-name diffios.dev'],
-          ['line con 0',
-           ' exec-timeout 5 0',
-           ' authorization exec CON',
-           ' login authentication CON'],
-          ['line vty 0 4',
-           ' exec-timeout 5 0',
-           ' authorization exec VTY',
-           ' login authentication VTY',
-           ' transport input telnet ssh'],
-          ['line vty 5 15', ' exec-timeout 5 0', ' transport input telnet ssh'],
-          ['no ip domain-lookup'],
-          ['no service pad'],
-          ['service password-encryption'],
-          ['service sequence-numbers'],
-          ['service tcp-keepalives-in'],
-          ['service tcp-keepalives-out'],
-          ['service timestamps debug datetime msec localtime year'],
-          ['service timestamps log datetime msec localtime year'],
-          ['version 15.0']]
-    return bb
+    content = [
+        ['boot-end-marker'],
+        ['boot-start-marker'],
+        ['end'],
+        ['hostname BASELINE01'],
+        ['interface FastEthernet0/1',
+         ' description Management',
+         ' switchport trunk native vlan 777',
+         ' switchport trunk allowed vlan 410,411,777',
+         ' switchport mode trunk',
+         ' switchport nonegotiate'],
+        ['ip domain-name diffios.dev'],
+        ['line con 0',
+         ' exec-timeout 5 0',
+         ' authorization exec CON',
+         ' login authentication CON'],
+        ['line vty 0 4',
+         ' exec-timeout 5 0',
+         ' authorization exec VTY',
+         ' login authentication VTY',
+         ' transport input telnet ssh'],
+        ['line vty 5 15', ' exec-timeout 5 0', ' transport input telnet ssh'],
+        ['no ip domain-lookup'],
+        ['no service pad'],
+        ['service password-encryption'],
+        ['service sequence-numbers'],
+        ['service tcp-keepalives-in'],
+        ['service tcp-keepalives-out'],
+        ['service timestamps debug datetime msec localtime year'],
+        ['service timestamps log datetime msec localtime year'],
+        ['version 15.0']]
+    return content
+
+
+@pytest.fixture
+def ignored():
+    content = [
+        ['end'],
+        ['hostname BASELINE01'],
+        ['version 15.0']]
+    return content
+
+
+@pytest.fixture
+def recorded():
+    content = sorted([
+        ['no service pad'],
+        ['service tcp-keepalives-in'],
+        ['service tcp-keepalives-out'],
+        ['service timestamps debug datetime msec localtime year'],
+        ['service timestamps log datetime msec localtime year'],
+        ['service password-encryption'],
+        ['service sequence-numbers'],
+        ['boot-start-marker'],
+        ['boot-end-marker'],
+        ['no ip domain-lookup'],
+        ['ip domain-name diffios.dev'],
+        ['interface FastEthernet0/1',
+         ' description Management',
+         ' switchport trunk native vlan 777',
+         ' switchport trunk allowed vlan 410,411,777',
+         ' switchport mode trunk',
+         ' switchport nonegotiate'],
+        ['line con 0',
+         ' exec-timeout 5 0',
+         ' authorization exec CON',
+         ' login authentication CON'],
+        ['line vty 0 4',
+         ' exec-timeout 5 0',
+         ' authorization exec VTY',
+         ' login authentication VTY',
+         ' transport input telnet ssh'],
+        ['line vty 5 15',
+         ' exec-timeout 5 0',
+         ' transport input telnet ssh']])
+    return content
 
 
 @pytest.fixture
 def baseline_partition():
+    Partition = namedtuple("Partition", "ignored recorded")
     bp = Partition(
         ignored=[
             ['banner login ^C'],
