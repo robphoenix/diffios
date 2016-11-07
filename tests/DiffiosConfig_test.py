@@ -57,7 +57,6 @@ def test_ignores_is_empty_list_if_passed_empty_list():
 
 def test_config(baseline, baseline_config):
     config = baseline.split('\n')
-    # pytest.skip('config property now removes invalid lines')
     expected = baseline_config.split('\n')
     assert expected == DiffiosConfig(config).config
 
@@ -94,7 +93,7 @@ def test_config_blocks_with_file(baseline, baseline_blocks):
     with mock.patch('diffios.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
         config_data = mock.mock_open(read_data=baseline)
-        with mock.patch('diffios.open', config_data) as mock_open:
+        with mock.patch('diffios.open', config_data, create=True) as mock_open:
             # ignores must be empty for this test otherwise
             # the open call to the default ignores file will interfere
             actual = DiffiosConfig('baseline.conf', ignores=[]).config_blocks
