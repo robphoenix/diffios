@@ -15,6 +15,9 @@ sys.path.append(os.path.abspath("."))
 from diffios import DiffiosConfig
 
 
+DEFAULT_IGNORES_FILENAME = 'diffios_ignore'
+
+
 def test_raises_error_if_config_not_given():
     """
     Raise TypeError if no config passed to DiffiosConfig
@@ -48,14 +51,19 @@ def test_raises_error_if_provided_ignore_file_does_not_exist():
         DiffiosConfig(config, ignores='file_that_does_not_exist')
 
 
-def test_uses_default_ignores_file_if_it_exists():
+def test_uses_default_ignores_file_if_it_exists(ignores_file):
     """
     Use default ignores file if it exists.
     """
     config = ['hostname ROUTER']
-    with open(os.path.join(os.getcwd(), 'diffios_ignore')) as i:
-        ignores = [l.strip().lower() for l in i]
-    assert DiffiosConfig(config).ignores == ignores
+    ignores_data = mock.mock_open(read_data=ignores_file)
+    expected = ignores_file.lower().split('\n')
+    with mock.patch('diffios.os.path') as mock_path:
+        mock_path.exists.return_value = True
+        with mock.patch('diffios.open', ignores_data, create=True) as mock_open:
+            actual = DiffiosConfig(config).ignores
+            mock_open.assert_called_once_with(os.path.join(os.getcwd(), DEFAULT_IGNORES_FILENAME))
+            assert expected == actual
 
 
 def test_ignores_is_empty_list_if_no_default_ignore_file():
