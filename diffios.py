@@ -375,25 +375,24 @@ class DiffiosDiff(object):
         similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
         translated = self.comparison.recorded[:]
         for x, y in similar:
+            y_copy = y[:]
             for xline in x:
                 match = re.search(self.delimiter, xline)
                 if match:
-                    var = match.group()
-                    start = xline.index(d[0])
-                    end = (xline.index(d[-1]) + 2) - len(xline) or len(xline)
-                    translated_block = []
-                    for yline in y:
+                    for yline in y_copy:
+                        var = match.group()
+                        start = xline.index(d[0])
+                        end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
                         before = yline[:start]
                         after = yline[end:]
                         translated_yline = '{0}{1}{2}'.format(before, var, after)
                         if translated_yline == xline:
-                            translated_block.append(translated_yline)
-                        else:
-                            translated_block.append(yline)
-                    if d[0] in ''.join(translated_block):
-                        index = translated.index(y)
-                        translated.remove(y)
-                        translated.insert(index, translated_block)
+                            y[y_copy.index(yline)] = translated_yline
+            if d[0] in ''.join(y):
+                try:
+                    translated[translated.index(y_copy)] = y
+                except ValueError:
+                    pass
         return translated
 
     def _comparator(self, measurable, reference, translation):

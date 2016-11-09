@@ -208,7 +208,7 @@ def recorded():
 @pytest.fixture
 def int_baseline():
     return """interface FastEthernet0/5
- description Data and Voice Access Port
+ description {{ description }}
  switchport access vlan 101
  switchport mode access
  switchport nonegotiate
@@ -237,13 +237,13 @@ def int_baseline():
  storm-control broadcast level 20.00
  spanning-tree portfast
  spanning-tree bpduguard enable
- service-policy input QOS-CLASSIFY""".split('\n')
+ service-policy input QOS-CLASSIFY""".splitlines()
 
 
 @pytest.fixture
 def int_comparison():
     return """interface FastEthernet0/5
- description Cisco AP
+ description Data and Voice Access Port
  switchport access vlan 101
  switchport trunk native vlan 999
  switchport trunk allowed vlan 510,511,999

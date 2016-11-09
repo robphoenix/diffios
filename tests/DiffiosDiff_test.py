@@ -7,7 +7,7 @@ from diffios import DiffiosDiff
 
 def test_different_vlan_interface_config(ignores):
     baseline = [
-        'hostname BASELINE',
+        'hostname {{ hostname }}',
         'interface Vlan1',
         ' no ip address',
         ' shutdown'
@@ -44,7 +44,7 @@ def test_different_fast_interface_config_ignoring_description(int_baseline, int_
         'interface FastEthernet0/5',
         ' switchport mode access'
     ]]
-    diff = DiffiosDiff(baseline=int_baseline, comparison=int_comparison)
+    diff = DiffiosDiff(baseline=int_baseline, comparison=int_comparison, ignore_file=[])
     assert expected_additional == diff.additional
     assert expected_missing == diff.missing
 
@@ -63,8 +63,7 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
         ['aaa authorization exec CON group tacacs+ local'],
         ['aaa authorization exec VTY group tacacs+ local'],
         ['aaa authorization exec default group tacacs+ local'],
-        ['aaa server radius dynamic-author',
-            ' client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        ['aaa server radius dynamic-author', ' client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL']]
     expected_missing = [
         ['aaa accounting exec CON start-stop group radius'],
         ['aaa accounting exec VTY start-stop group radius'],
@@ -72,8 +71,7 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
         ['aaa authentication login VTY group radius local'],
         ['aaa authorization exec CON group radius local'],
         ['aaa authorization exec VTY group radius local'],
-        ['aaa server radius dynamic-author',
-            ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        ['aaa server radius dynamic-author', ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
     diff = DiffiosDiff(baseline=aaa_baseline, comparison=aaa_comparison)
     assert expected_additional == diff.additional
     assert expected_missing == diff.missing
