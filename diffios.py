@@ -6,15 +6,6 @@ import os
 from collections import namedtuple
 
 
-PARTIALS = [
-    "^(?P<non_var> ip address )\d+\.\d+\.\d+\.\d+\s\d+\.\d+\.\d+\.\d+",
-    "^(?P<non_var> description ).+",
-    "(?P<non_var>ip dhcp snooping vlan ).+",
-    "(?P<non_var>ip default-gateway ).+",
-    "(?P<non_var>switchport trunk allowed vlan ).+"
-]
-
-
 class DiffiosConfig(object):
 
     """DiffiosConfig prepares a Cisco IOS Config to diff.
@@ -352,7 +343,6 @@ class DiffiosDiff(object):
         # TODO: confirm existence of files
         self.baseline = DiffiosConfig(baseline, ignore_file)
         self.comparison = DiffiosConfig(comparison, ignore_file)
-        self.partials = PARTIALS
 
     def _translate_block(self, block):
         """TODO: Docstring for _translate_block.
@@ -366,12 +356,6 @@ class DiffiosDiff(object):
         post_translation_block = []
         for i, line in enumerate(block):
             match = None
-            for pattern in self.partials:
-                if re.search(pattern, line):
-                    match = re.search(pattern, line).group('non_var')
-                    post_translation_block.append(match)
-            if match is None:
-                post_translation_block.append(line)
         return post_translation_block
 
     def _translated(self, data):
