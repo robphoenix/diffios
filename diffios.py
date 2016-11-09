@@ -396,67 +396,33 @@ class DiffiosDiff(object):
                         translated.insert(index, translated_block)
         return translated
 
-    def _compare_blocks(self, wv_block, wov_block):
-        """TODO: Docstring for _translated_block.
+    def _comparator(self, measurable, reference, translation):
+        """TODO: Docstring for _comparator.
 
         Args:
-            wv_block (TODO): TODO
-            wov_block (TODO): TODO
+            measurable (TODO): TODO
+            reference (TODO): TODO
 
         Returns: TODO
 
         """
-        block = []
-        delimiter = self.delimiter
-        for wv_line in wv_block:
-            match = re.search(delimiter, wv_line)
-            if match:
-                var = match.group()
-                start = wv_line.index(delimiter[0])
-                end = (wv_line.index(delimiter[-1]) + 2) - len(wv_line)
-                if end == 0:
-                    end = len(wv_line)
-                for wov_line in wov_block:
-                    before = wov_line[:start]
-                    after = wov_line[end:]
-                    translated_line = before + var + after
-                    if wv_line == translated_line:
-                        block.append(translated_line)
-                    else:
-                        block.append(wov_line)
-        print(block)
-        return None
-
-    def _changes(self, dynamic, static):
-        """TODO: Docstring for _changes.
-
-        Args:
-            dynamic (TODO): TODO
-            static (TODO): TODO
-
-        Returns: TODO
-
-        """
-        translated_static = self._translate(static)
-        translated_dynamic = self._translate(dynamic)
-        head = [line[0] for line in static]
+        head = [line[0] for line in reference]
         changes = []
-        for dynamic_index, dynamic_block in enumerate(translated_dynamic):
-            if len(dynamic_block) == 1 and dynamic_block not in translated_static:
-                changes.append(dynamic[dynamic_index])
-            elif len(dynamic_block) > 1:
-                first_line = dynamic_block[0]
+        for mi, mb in enumerate(measurable):
+            if len(mb) == 1 and mb not in reference:
+                changes.append(translation[mi])
+            elif len(mb) > 1:
+                first_line = mb[0]
                 if first_line in head:
-                    static_block = translated_static[head.index(first_line)]
+                    rb = reference[head.index(first_line)]
                     additional = [first_line]
-                    for dynamic_block_index, line in enumerate(dynamic_block):
-                        if line not in static_block:
-                            additional.append(
-                                dynamic[dynamic_index][dynamic_block_index])
+                    for mbi, line in enumerate(mb):
+                        if line not in rb:
+                            additional.append(translation[mi][mbi])
                     if len(additional) > 1:
                         changes.append(additional)
                 else:
-                    changes.append(dynamic[dynamic_index])
+                    changes.append(translation[mi])
         return sorted(changes)
 
     @staticmethod
@@ -478,7 +444,10 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        return self._changes(self.comparison.recorded, self.baseline.recorded)
+        measurable = self._translate_comparison()
+        reference = self.baseline.recorded
+        translation = self.comparison.recorded
+        return self._comparator(measurable, reference, translation)
 
     @property
     def missing(self):
@@ -487,7 +456,10 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        return self._changes(self.baseline.recorded, self.comparison.recorded)
+        measurable = self.baseline.recorded
+        reference = self._translate_comparison()
+        translation = self.baseline.recorded
+        return self._comparator(measurable, reference, translation)
 
     @property
     def pprint_additional(self):
