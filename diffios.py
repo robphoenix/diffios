@@ -364,13 +364,18 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        result = []
-        for wv_block in with_vars:
-            for wov_block in without_vars:
-                result.append(self._translated_block(wv_block, wov_block))
-        return result
+        var_blocks = []
+        for block in with_vars:
+            for line in block:
+                if re.search(self.delimiter, line):
+                    var_blocks.append(block)
+        # result = []
+        for vb in var_blocks:
+            for wvb in without_vars:
+                self._compare_blocks(vb, wvb)
+        return None
 
-    def _translated_block(self, wv_block, wov_block):
+    def _compare_blocks(self, wv_block, wov_block):
         """TODO: Docstring for _translated_block.
 
         Args:
@@ -383,30 +388,23 @@ class DiffiosDiff(object):
         block = []
         delimiter = self.delimiter
         for wv_line in wv_block:
-            for wov_line in wov_block:
-                match = re.search(delimiter, wv_line)
-                if match:
-                    var = match.group()
-                    start = wv_line.index(delimiter[0])
-                    end = (wv_line.index(delimiter[-1]) + 2) - len(wv_line)
-                    translated_line = wov_line.replace(wov_line[start:end], var)
-                    block.append(translated_line)
-                else:
-                    block.append(wov_line)
-        return block
-
-    def _translated(self, with_vars, without_vars):
-        """TODO: Docstring for _translated.
-
-        Args:
-            baseline (TODO): TODO
-            comparison (TODO): TODO
-
-        Returns: TODO
-
-        """
-        result = self._translate(with_vars, without_vars)
-        return result
+            match = re.search(delimiter, wv_line)
+            if match:
+                var = match.group()
+                start = wv_line.index(delimiter[0])
+                end = (wv_line.index(delimiter[-1]) + 2) - len(wv_line)
+                if end == 0:
+                    end = len(wv_line)
+                for wov_line in wov_block:
+                    before = wov_line[:start]
+                    after = wov_line[end:]
+                    translated_line = before + var + after
+                    if wv_line == translated_line:
+                        block.append(translated_line)
+                    else:
+                        block.append(wov_line)
+        print(block)
+        return None
 
     def _changes(self, dynamic, static):
         """TODO: Docstring for _changes.
@@ -418,23 +416,13 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        translated_static = None
-        translated_dynamic = None
-        if dynamic.contains_variables:
-            with_vars = dynamic.recorded
-            without_vars = static.recorded
-            translated_static = self._translated(with_vars, without_vars)
-            translated_dynamic = dynamic.recorded
-        else:
-            with_vars = static.recorded
-            without_vars = dynamic.recorded
-            translated_dynamic = self._translated(with_vars, without_vars)
-            translated_static = static.recorded
-        head = [line[0] for line in static.recorded]
+        translated_static = self._translate(static)
+        translated_dynamic = self._translate(dynamic)
+        head = [line[0] for line in static]
         changes = []
         for dynamic_index, dynamic_block in enumerate(translated_dynamic):
             if len(dynamic_block) == 1 and dynamic_block not in translated_static:
-                changes.append(dynamic.recorded[dynamic_index])
+                changes.append(dynamic[dynamic_index])
             elif len(dynamic_block) > 1:
                 first_line = dynamic_block[0]
                 if first_line in head:
@@ -443,11 +431,11 @@ class DiffiosDiff(object):
                     for dynamic_block_index, line in enumerate(dynamic_block):
                         if line not in static_block:
                             additional.append(
-                                dynamic.recorded[dynamic_index][dynamic_block_index])
+                                dynamic[dynamic_index][dynamic_block_index])
                     if len(additional) > 1:
                         changes.append(additional)
                 else:
-                    changes.append(dynamic.recorded[dynamic_index])
+                    changes.append(dynamic[dynamic_index])
         return sorted(changes)
 
     @staticmethod
@@ -469,10 +457,7 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        # comparison = self.comparison.recorded
-        # baseline = self.baseline.recorded
-        additional = self._changes(self.comparison, self.baseline)
-        return additional
+        return self._changes(self.comparison.recorded, self.baseline.recorded)
 
     @property
     def missing(self):
@@ -481,10 +466,7 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        # comparison = self.comparison.recorded
-        # baseline = self.baseline.recorded
-        missing = self._changes(self.baseline, self.comparison)
-        return missing
+        return self._changes(self.baseline.recorded, self.comparison.recorded)
 
     @property
     def pprint_additional(self):
