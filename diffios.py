@@ -344,31 +344,6 @@ class DiffiosDiff(object):
         self.baseline = DiffiosConfig(baseline, ignore_file)
         self.comparison = DiffiosConfig(comparison, ignore_file)
 
-    def _translate_block(self, block):
-        """TODO: Docstring for _translate_block.
-
-        Args:
-            block (TODO): TODO
-
-        Returns: TODO
-
-        """
-        post_translation_block = []
-        for i, line in enumerate(block):
-            match = None
-        return post_translation_block
-
-    def _translated(self, data):
-        """TODO: Docstring for _translated.
-
-        Args:
-            data (TODO): TODO
-
-        Returns: TODO
-
-        """
-        return [self._translate_block(block) for block in data]
-
     def _changes(self, dynamic, static):
         """TODO: Docstring for _changes.
 
