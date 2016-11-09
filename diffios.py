@@ -68,6 +68,20 @@ class DiffiosConfig(object):
         self.config = self._config(config)
         self.ignores = self._ignores(ignores)
 
+    @property
+    def contains_variables(self, delimiter=None):
+        """TODO: Docstring for contains_variables.
+
+        Kwargs:
+            delimiter (TODO): TODO
+
+        Returns: TODO
+
+        """
+        if delimiter is None:
+            delimiter = re.compile(r'{{(.+)}}')
+        return any(re.search(delimiter, line) for line in self.config)
+
     def _config(self, data):
         """Transforms given config data into usable format,
             with only valid lines.
@@ -354,17 +368,15 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        translated_dynamic = self._translated(dynamic)
-        translated_static = self._translated(static)
         head = [line[0] for line in static]
         changes = []
-        for dynamic_index, dynamic_block in enumerate(translated_dynamic):
-            if len(dynamic_block) == 1 and dynamic_block not in translated_static:
+        for dynamic_index, dynamic_block in enumerate(dynamic):
+            if len(dynamic_block) == 1 and dynamic_block not in static:
                 changes.append(dynamic[dynamic_index])
             elif len(dynamic_block) > 1:
                 first_line = dynamic_block[0]
                 if first_line in head:
-                    static_block = translated_static[head.index(first_line)]
+                    static_block = static[head.index(first_line)]
                     additional = [first_line]
                     for dynamic_block_index, line in enumerate(dynamic_block):
                         if line not in static_block:
