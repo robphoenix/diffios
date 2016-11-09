@@ -357,6 +357,56 @@ class DiffiosDiff(object):
         # TODO: confirm existence of files
         self.baseline = DiffiosConfig(baseline, ignore_file)
         self.comparison = DiffiosConfig(comparison, ignore_file)
+        self.delimiter = r'{{(.+)}}'
+
+    def _translate(self, with_vars, without_vars):
+        """TODO: Docstring for _translate.
+        Returns: TODO
+
+        """
+        result = []
+        for wv_block in with_vars:
+            for wov_block in without_vars:
+                result.append(self._translated_block(wv_block, wov_block))
+        return result
+
+    def _translated_block(self, wv_block, wov_block):
+        """TODO: Docstring for _translated_block.
+
+        Args:
+            wv_block (TODO): TODO
+            wov_block (TODO): TODO
+
+        Returns: TODO
+
+        """
+        block = []
+        delimiter = self.delimiter
+        for wv_line in wv_block:
+            for wov_line in wov_block:
+                match = re.search(delimiter, wv_line)
+                if match:
+                    var = match.group()
+                    start = wv_line.index(delimiter[0])
+                    end = (wv_line.index(delimiter[-1]) + 2) - len(wv_line)
+                    translated_line = wov_line.replace(wov_line[start:end], var)
+                    block.append(translated_line)
+                else:
+                    block.append(wov_line)
+        return block
+
+    def _translated(self, with_vars, without_vars):
+        """TODO: Docstring for _translated.
+
+        Args:
+            baseline (TODO): TODO
+            comparison (TODO): TODO
+
+        Returns: TODO
+
+        """
+        result = self._translate(with_vars, without_vars)
+        return result
 
     def _changes(self, dynamic, static):
         """TODO: Docstring for _changes.
@@ -368,24 +418,36 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        head = [line[0] for line in static]
+        translated_static = None
+        translated_dynamic = None
+        if dynamic.contains_variables:
+            with_vars = dynamic.recorded
+            without_vars = static.recorded
+            translated_static = self._translated(with_vars, without_vars)
+            translated_dynamic = dynamic.recorded
+        else:
+            with_vars = static.recorded
+            without_vars = dynamic.recorded
+            translated_dynamic = self._translated(with_vars, without_vars)
+            translated_static = static.recorded
+        head = [line[0] for line in static.recorded]
         changes = []
-        for dynamic_index, dynamic_block in enumerate(dynamic):
-            if len(dynamic_block) == 1 and dynamic_block not in static:
-                changes.append(dynamic[dynamic_index])
+        for dynamic_index, dynamic_block in enumerate(translated_dynamic):
+            if len(dynamic_block) == 1 and dynamic_block not in translated_static:
+                changes.append(dynamic.recorded[dynamic_index])
             elif len(dynamic_block) > 1:
                 first_line = dynamic_block[0]
                 if first_line in head:
-                    static_block = static[head.index(first_line)]
+                    static_block = translated_static[head.index(first_line)]
                     additional = [first_line]
                     for dynamic_block_index, line in enumerate(dynamic_block):
                         if line not in static_block:
                             additional.append(
-                                dynamic[dynamic_index][dynamic_block_index])
+                                dynamic.recorded[dynamic_index][dynamic_block_index])
                     if len(additional) > 1:
                         changes.append(additional)
                 else:
-                    changes.append(dynamic[dynamic_index])
+                    changes.append(dynamic.recorded[dynamic_index])
         return sorted(changes)
 
     @staticmethod
@@ -407,9 +469,9 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        comparison = self.comparison.recorded
-        baseline = self.baseline.recorded
-        additional = self._changes(comparison, baseline)
+        # comparison = self.comparison.recorded
+        # baseline = self.baseline.recorded
+        additional = self._changes(self.comparison, self.baseline)
         return additional
 
     @property
@@ -419,9 +481,9 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        comparison = self.comparison.recorded
-        baseline = self.baseline.recorded
-        missing = self._changes(baseline, comparison)
+        # comparison = self.comparison.recorded
+        # baseline = self.baseline.recorded
+        missing = self._changes(self.baseline, self.comparison)
         return missing
 
     @property
