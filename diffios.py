@@ -4,6 +4,7 @@
 import re
 import os
 from collections import namedtuple
+from itertools import product
 
 
 class DiffiosConfig(object):
@@ -359,21 +360,41 @@ class DiffiosDiff(object):
         self.comparison = DiffiosConfig(comparison, ignore_file)
         self.delimiter = r'{{(.+)}}'
 
-    def _translate(self, with_vars, without_vars):
-        """TODO: Docstring for _translate.
-        Returns: TODO
-
-        """
+    def _baseline_var_blocks(self):
         var_blocks = []
-        for block in with_vars:
+        for block in self.baseline.recorded:
             for line in block:
                 if re.search(self.delimiter, line):
                     var_blocks.append(block)
-        # result = []
-        for vb in var_blocks:
-            for wvb in without_vars:
-                self._compare_blocks(vb, wvb)
-        return None
+        return var_blocks
+
+    def _translate_comparison(self):
+        prod = product(self._baseline_var_blocks(), self.comparison.recorded)
+        d = self.delimiter
+        filter_prod = [(x, y) for (x, y) in prod if d[0] in ''.join(x) or d[0] in ''.join(y)]
+        similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
+        translated = self.comparison.recorded[:]
+        for x, y in similar:
+            for xline in x:
+                match = re.search(self.delimiter, xline)
+                if match:
+                    var = match.group()
+                    start = xline.index(d[0])
+                    end = (xline.index(d[-1]) + 2) - len(xline) or len(xline)
+                    translated_block = []
+                    for yline in y:
+                        before = yline[:start]
+                        after = yline[end:]
+                        translated_yline = '{0}{1}{2}'.format(before, var, after)
+                        if translated_yline == xline:
+                            translated_block.append(translated_yline)
+                        else:
+                            translated_block.append(yline)
+                    if d[0] in ''.join(translated_block):
+                        index = translated.index(y)
+                        translated.remove(y)
+                        translated.insert(index, translated_block)
+        return translated
 
     def _compare_blocks(self, wv_block, wov_block):
         """TODO: Docstring for _translated_block.
