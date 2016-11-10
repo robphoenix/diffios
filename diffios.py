@@ -369,18 +369,23 @@ class DiffiosDiff(object):
         return var_blocks
 
     def _translate_comparison(self):
-        prod = product(self._baseline_var_blocks(), self.comparison.recorded)
         d = self.delimiter
+        translated = self.comparison.recorded[:]
+        prod = product(self._baseline_var_blocks(), self.comparison.recorded)
         filter_prod = [(x, y) for (x, y) in prod if d[0] in ''.join(x) or d[0] in ''.join(y)]
         similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
-        remove_not_same = []
+        more_similar = []
+        # We need to ensure that if the parent line in a block is
+        # not a variable line, that the parents of the x & y blocks
+        # match fully, otherwise we get issues where different blocks
+        # are matched up together as they have the same first word
+        # in their parents.
         for x, y in similar:
             if d[0] not in x[0] and d[0] not in y[0] and x[0] == y[0]:
-                remove_not_same.append((x, y))
+                more_similar.append((x, y))
             elif d[0] in x[0] or d[0] in y[0]:
-                remove_not_same.append((x, y))
-        translated = self.comparison.recorded[:]
-        for x, y in remove_not_same:
+                more_similar.append((x, y))
+        for x, y in more_similar:
             y_copy = y[:]
             for xline in x:
                 match = re.search(self.delimiter, xline)
