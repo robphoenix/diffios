@@ -162,7 +162,7 @@ class DiffiosConfig(object):
 
         """
         lstrip = line.strip()
-        return len(lstrip) > 0 and not lstrip.startswith("!")
+        return len(lstrip) > 0 and not lstrip.startswith("!") and lstrip != '^' and lstrip != '^C'
 
     @staticmethod
     def _group_into_blocks(config):
@@ -373,8 +373,14 @@ class DiffiosDiff(object):
         d = self.delimiter
         filter_prod = [(x, y) for (x, y) in prod if d[0] in ''.join(x) or d[0] in ''.join(y)]
         similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
-        translated = self.comparison.recorded[:]
+        remove_not_same = []
         for x, y in similar:
+            if d[0] not in x[0] and d[0] not in y[0] and x[0] == y[0]:
+                remove_not_same.append((x, y))
+            elif d[0] in x[0] or d[0] in y[0]:
+                remove_not_same.append((x, y))
+        translated = self.comparison.recorded[:]
+        for x, y in remove_not_same:
             y_copy = y[:]
             for xline in x:
                 match = re.search(self.delimiter, xline)
