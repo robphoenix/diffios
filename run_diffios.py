@@ -3,6 +3,7 @@
 
 import os
 import csv
+import progressbar
 
 from diffios import DiffiosDiff
 
@@ -10,6 +11,7 @@ IGNORE_FILE = os.path.join(os.getcwd(), "priv", "diffios_ignore")
 COMPARISON_DIR = os.path.join(os.getcwd(), "priv", "anchor")
 BASELINE_FILENAME = "sm_sw_baseline.txt"
 BASELINE_FILE = os.path.join(os.getcwd(), "priv", "anchor_baselines", BASELINE_FILENAME)
+bar = progressbar.ProgressBar()
 
 with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
     csvwriter = csv.writer(csvfile, lineterminator='\n')
@@ -22,15 +24,13 @@ with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
     ])
     i = 1
     files = sorted(os.listdir(COMPARISON_DIR))
-    for fin in files:
+    for fin in bar(files):
         comparison_file = os.path.join(COMPARISON_DIR, fin)
         diff = DiffiosDiff(
             baseline=BASELINE_FILE,
             comparison=comparison_file,
             ignore_file=IGNORE_FILE
         )
-        print("{0} of {1}: {2} => {3}".format(
-            i, len(files), fin, os.path.basename(BASELINE_FILE)))
         csvwriter.writerow([
             fin,
             diff.comparison.hostname,
