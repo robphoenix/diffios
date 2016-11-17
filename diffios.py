@@ -392,6 +392,7 @@ class DiffiosDiff(object):
                 if match:
                     for yline in y_copy:
                         var = match.group()
+                        # TODO: check if this could be match.start()
                         start = xline.index(d[0])
                         end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
                         before = yline[:start]
