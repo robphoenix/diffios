@@ -358,7 +358,46 @@ class DiffiosDiff(object):
         # TODO: confirm existence of files
         self.baseline = DiffiosConfig(baseline, ignore_file)
         self.comparison = DiffiosConfig(comparison, ignore_file)
-        self.delimiter = r'{{(.+)}}'
+        self.delimiter = r'{{[^{}]+}}'
+
+    def _replace_vars(self, yline, xline, vars, spans):
+        """TODO: Docstring for _replace_vars.
+
+        Args:
+            line (TODO): TODO
+            vars (TODO): TODO
+            indexes (TODO): TODO
+
+        Returns: TODO
+
+        """
+        res = []
+        first = spans[0]
+        last = spans[-1]
+        rest = []
+        coords = []
+
+        for i, el in enumerate(spans[1:-1], 1):
+            if i % 2 != 0:
+                coords.append(el)
+            else:
+                coords.append(el)
+                rest.append(tuple(coords))
+                coords = []
+
+        res.append(yline[:first])
+        res.append(vars[0])
+
+        for i, (x, y) in enumerate(rest, 1):
+            print(vars)
+            start = x - (len(xline) + 2)
+            end = y - (len(xline) + 2)
+            res.append(yline[start:end])
+            if i < len(vars):
+                res.append(vars[i])
+
+        res.append(yline[last - (len(xline)):])
+        return ''.join(res)
 
     def _baseline_var_blocks(self):
         var_blocks = []
@@ -388,11 +427,10 @@ class DiffiosDiff(object):
         for x, y in more_similar:
             y_copy = y[:]
             for xline in x:
-                match = re.search(self.delimiter, xline)
-                if match:
+                matches = re.findall(self.delimiter, xline)
+                if matches and len(matches) == 1:
                     for yline in y_copy:
-                        var = match.group()
-                        # TODO: check if this could be match.start()
+                        var = matches[0]
                         start = xline.index(d[0])
                         end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
                         before = yline[:start]
@@ -400,6 +438,18 @@ class DiffiosDiff(object):
                         translated_yline = '{0}{1}{2}'.format(before, var, after)
                         if translated_yline == xline:
                             y[y_copy.index(yline)] = translated_yline
+                if matches:
+                    match_iter = re.finditer(self.delimiter, xline)
+                    spans = []
+                    for m in match_iter:
+                        spans.append(m.span()[0])
+                        spans.append(m.span()[1])
+                    for yline in y_copy:
+                        translated_yline = self._replace_vars(yline, xline, matches, spans)
+                        if translated_yline == xline:
+                            y[y_copy.index(yline)] = translated_yline
+                        else:
+                            print(translated_yline)
             if d[0] in ''.join(y):
                 try:
                     translated[translated.index(y_copy)] = y
