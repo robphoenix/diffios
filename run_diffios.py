@@ -10,7 +10,8 @@ from diffios import DiffiosDiff
 IGNORE_FILE = os.path.join(os.getcwd(), "priv", "diffios_ignore")
 COMPARISON_DIR = os.path.join(os.getcwd(), "priv", "anchor")
 BASELINE_FILENAME = "sm_sw_baseline.txt"
-BASELINE_FILE = os.path.join(os.getcwd(), "priv", "anchor_baselines", BASELINE_FILENAME)
+BASELINE_FILE = os.path.join(
+    os.getcwd(), "priv", "anchor_baselines", BASELINE_FILENAME)
 bar = progressbar.ProgressBar()
 
 with open(os.path.join(os.getcwd(), "priv", "diffs.csv"), 'w') as csvfile:
