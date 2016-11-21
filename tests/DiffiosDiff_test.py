@@ -77,9 +77,51 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
     assert expected_missing == diff.missing
 
 
-def test_multiple_vars():
+def test_multiple_vars_ip_route():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = DiffiosDiff(baseline, config, [])
     assert [] == diff.additional
-    # assert [] == diff.missing
+    assert [] == diff.missing
+
+
+def test_multiple_vars_ip_route_without_splaces():
+    config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
+    baseline = ['ip route {{LAN_NET}} 255.255.0.0 {{VLAN_99_IP}} tag 100']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing
+
+
+def test_multiple_vars_ip_route_duplicated_ip():
+    config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.10 tag 100']
+    baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing
+
+
+def test_multiple_vars_ip_route_similar_ip():
+    config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.100 tag 100']
+    baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing
+
+
+def test_triple_vars_ip_route():
+    config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100 and this']
+    baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100 and {{ this }}']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing
+
+
+def test_multiple_vars_description():
+    baseline = ['description *** ADSL {{PSTN_NO}} {{CCT_ID}} ***',
+                'description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***']
+    config = ['description *** ADSL 12345 67890 ***',
+              'description *** FTTC on PSTN:12345 CCT:67890 ***']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing

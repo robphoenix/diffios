@@ -360,7 +360,7 @@ class DiffiosDiff(object):
         self.comparison = DiffiosConfig(comparison, ignore_file)
         self.delimiter = r'{{[^{}]+}}'
 
-    def _replace_vars(self, yline, xline, vars, spans):
+    def _replace_vars(self, yline, xline):
         """TODO: Docstring for _replace_vars.
 
         Args:
@@ -371,33 +371,14 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        res = []
-        first = spans[0]
-        last = spans[-1]
-        rest = []
-        coords = []
-
-        for i, el in enumerate(spans[1:-1], 1):
-            if i % 2 != 0:
-                coords.append(el)
-            else:
-                coords.append(el)
-                rest.append(tuple(coords))
-                coords = []
-
-        res.append(yline[:first])
-        res.append(vars[0])
-
-        for i, (x, y) in enumerate(rest, 1):
-            print(vars)
-            start = x - (len(xline) + 2)
-            end = y - (len(xline) + 2)
-            res.append(yline[start:end])
-            if i < len(vars):
-                res.append(vars[i])
-
-        res.append(yline[last - (len(xline)):])
-        return ''.join(res)
+        yline_split = yline.split()
+        xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
+        xy_lines_zipped = zip(yline_split, xline_split)
+        transformed = yline_split
+        for i, (x, y) in enumerate(xy_lines_zipped):
+            if x != y:
+                transformed[i] = y
+        return ' '.join(transformed)
 
     def _baseline_var_blocks(self):
         var_blocks = []
@@ -445,11 +426,10 @@ class DiffiosDiff(object):
                         spans.append(m.span()[0])
                         spans.append(m.span()[1])
                     for yline in y_copy:
-                        translated_yline = self._replace_vars(yline, xline, matches, spans)
-                        if translated_yline == xline:
-                            y[y_copy.index(yline)] = translated_yline
-                        else:
-                            print(translated_yline)
+                        translated_yline = self._replace_vars(yline, xline)
+                        xliner = xline.replace('{{', '').replace('}}', '').replace('  ', ' ').rstrip()
+                        if translated_yline == xliner:
+                            y[y_copy.index(yline)] = xline
             if d[0] in ''.join(y):
                 try:
                     translated[translated.index(y_copy)] = y
