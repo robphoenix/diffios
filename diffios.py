@@ -383,7 +383,9 @@ class DiffiosDiff(object):
         if yline.split()[0] != xline.split()[0]:
             return False
         yline_split = yline.split()
+        print(re.split('({{[^{}]+}})', xline))
         xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
+        print(xline_split)
 
         if len(yline_split) != len(xline_split):
             res = []
