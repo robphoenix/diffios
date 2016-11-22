@@ -380,6 +380,8 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
+        if yline.split()[0] != xline.split()[0]:
+            return False
         yline_split = yline.split()
         xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
 
@@ -441,9 +443,7 @@ class DiffiosDiff(object):
                 matches = re.findall(self.delimiter, xline)
                 if matches:
                     for yline in y_copy:
-                        translated_yline = None
-                        if yline.split()[0] == xline.split()[0]:
-                            translated_yline = self._check_lines(yline, xline)
+                        translated_yline = self._check_lines(yline, xline)
                         if translated_yline:
                             y[y_copy.index(yline)] = xline
             if d[0] in ''.join(y):

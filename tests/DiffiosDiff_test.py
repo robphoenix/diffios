@@ -1,5 +1,6 @@
 import os
 import sys
+import pytest
 
 sys.path.append(os.path.abspath("."))
 from diffios import DiffiosDiff
@@ -138,6 +139,35 @@ def test_single_multiple_word_vars():
 def test_multiple_multiple_word_vars():
     baseline = ['interface FastEthernet0/5', ' description {{ VLAN }} connection to {{ BACKUP }}']
     config = ['interface FastEthernet0/5', ' description Vlan 99 connection to Core Backup']
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing
+
+
+def test_multiple_bgp_config_lines_with_same_first_word():
+    pytest.skip()
+    baseline = [
+        'router bgp {{BGP_AS}}',
+        ' network {{LAN_NET}} mask 255.255.248.0',
+        ' network {{LOOPBACK_IP}} mask 255.255.255.255',
+        ' neighbour {{PE_IP}} remote-as 1234',
+        ' neighbour {{PE_IP}} ebgp-multihop 2',
+        ' neighbour {{PE_IP}} update-source GigabitEthernet0/0',
+        ' neighbour {{PE_IP}} timers 10 30',
+        ' neighbour {{PE_IP}} send-community',
+        ' neighbour {{PE_IP}} soft-reconfiguration inbound'
+    ]
+    config = [
+        'router bgp 65500',
+        ' network 10.100.10.0 mask 255.255.248.0',
+        ' network 10.200.10.0 mask 255.255.255.255',
+        ' neighbour 10.200.10.10 remote-as 1234',
+        ' neighbour 10.200.10.10 ebgp-multihop 2',
+        ' neighbour 10.200.10.10 update-source GigabitEthernet0/0',
+        ' neighbour 10.200.10.10 timers 10 30',
+        ' neighbour 10.200.10.10 send-community',
+        ' neighbour 10.200.10.10 soft-reconfiguration inbound'
+    ]
     diff = DiffiosDiff(baseline, config, [])
     assert [] == diff.additional
     assert [] == diff.missing
