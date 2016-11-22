@@ -368,7 +368,8 @@ class DiffiosDiff(object):
                     var_blocks.append(block)
         return var_blocks
 
-    def _check_lines(self, yline, xline):
+    @staticmethod
+    def _check_lines(yline, xline):
         """TODO: Docstring for _check_lines.
 
         Args:
