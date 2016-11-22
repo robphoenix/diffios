@@ -1,6 +1,5 @@
 import os
 import sys
-import pytest
 
 sys.path.append(os.path.abspath("."))
 from diffios import DiffiosDiff
@@ -34,20 +33,20 @@ def test_different_vlan_interface_config(ignores):
     assert expected_missing == diff.missing
 
 
-# def test_different_fast_interface_config_ignoring_description(int_baseline, int_comparison):
-    # expected_additional = [[
-        # 'interface FastEthernet0/5',
-        # ' switchport trunk native vlan 999',
-        # ' switchport trunk allowed vlan 510,511,999',
-        # ' switchport mode trunk'
-    # ]]
-    # expected_missing = [[
-        # 'interface FastEthernet0/5',
-        # ' switchport mode access'
-    # ]]
-    # diff = DiffiosDiff(baseline=int_baseline, comparison=int_comparison, ignore_file=[])
-    # assert expected_additional == diff.additional
-    # assert expected_missing == diff.missing
+def test_different_fast_interface_config_ignoring_description(int_baseline, int_comparison):
+    expected_additional = [[
+        'interface FastEthernet0/5',
+        ' switchport trunk native vlan 999',
+        ' switchport trunk allowed vlan 510,511,999',
+        ' switchport mode trunk'
+    ]]
+    expected_missing = [[
+        'interface FastEthernet0/5',
+        ' switchport mode access'
+    ]]
+    diff = DiffiosDiff(baseline=int_baseline, comparison=int_comparison, ignore_file=[])
+    assert expected_additional == diff.additional
+    assert expected_missing == diff.missing
 
 
 def test_different_aaa_config(aaa_baseline, aaa_comparison):
@@ -145,7 +144,6 @@ def test_multiple_multiple_word_vars():
 
 
 def test_multiple_bgp_config_lines_with_same_first_word():
-    pytest.skip()
     baseline = [
         'router bgp {{BGP_AS}}',
         ' network {{LAN_NET}} mask 255.255.248.0',

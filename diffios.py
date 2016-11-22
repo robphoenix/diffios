@@ -369,7 +369,7 @@ class DiffiosDiff(object):
         return var_blocks
 
     @staticmethod
-    def _check_lines(yline, xline):
+    def _check_lines(xline, yline):
         """TODO: Docstring for _check_lines.
 
         Args:
@@ -380,47 +380,24 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        if yline.split()[0] != xline.split()[0]:
-            return False
-        yline_split = yline.split()
-        print(re.split('({{[^{}]+}})', xline))
-        xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
-        print(xline_split)
+        xline_split = []
+        for el in re.split('({{[^{}]+}})', xline):
+            if '{{' not in el:
+                for s in el.split():
+                    xline_split.append(s)
+            else:
+                xline_split.append(el)
 
-        if len(yline_split) != len(xline_split):
-            res = []
-            cur = ''
-            j = 0
-            for el in yline_split:
-                if el == xline_split[j] and cur:
-                    res.append(cur)
-                    res.append(el)
-                    j += 1
-                    cur = ''
-                elif el != xline_split[j] and cur:
-                    cur += ' '
-                    cur += el
-                elif el != xline_split[j] and (j + 1) < len(xline_split):
-                    cur = el
-                    j += 1
-                elif el == xline_split[j]:
-                    res.append(el)
-                    j += 1
-                    cur = ''
-                elif el != xline_split[j]:
-                    cur = el
-            if cur:
-                res.append(cur)
-            yline_split = res
-
-        xy_lines_zipped = zip(yline_split, xline_split)
-        for i, (x, y) in enumerate(xy_lines_zipped):
-            if x != y:
-                yline_split[i] = y
-
-        xline_without_delims = xline.replace('{{', '').replace('}}', '').replace('  ', ' ').strip()
-        yline_with_vars = ' '.join(yline_split)
-        return xline_without_delims == yline_with_vars
+        without_vars = [x for x in xline_split if '{{' not in x]
+        start = 0
+        comparison = []
+        for x in without_vars:
+            if x in yline[start:]:
+                comparison.append(x)
+                start += (len(x) + 1)
+            else:
+                return False
+        return comparison == without_vars
 
     def _translate_comparison(self):
         d = self.delimiter
@@ -445,7 +422,7 @@ class DiffiosDiff(object):
                 matches = re.findall(self.delimiter, xline)
                 if matches:
                     for yline in y_copy:
-                        translated_yline = self._check_lines(yline, xline)
+                        translated_yline = self._check_lines(xline, yline)
                         if translated_yline:
                             y[y_copy.index(yline)] = xline
             if d[0] in ''.join(y):
