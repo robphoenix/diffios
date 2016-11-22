@@ -80,7 +80,7 @@ class DiffiosConfig(object):
 
         """
         if delimiter is None:
-            delimiter = re.compile(r'{{(.+)}}')
+            delimiter = re.compile(r'{{[^{}]+}}')
         return any(re.search(delimiter, line) for line in self.config)
 
     def _config(self, data):
