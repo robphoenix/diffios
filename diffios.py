@@ -360,6 +360,14 @@ class DiffiosDiff(object):
         self.comparison = DiffiosConfig(comparison, ignore_file)
         self.delimiter = r'{{[^{}]+}}'
 
+    def _baseline_var_blocks(self):
+        var_blocks = []
+        for block in self.baseline.recorded:
+            for line in block:
+                if re.search(self.delimiter, line):
+                    var_blocks.append(block)
+        return var_blocks
+
     def _check_lines(self, yline, xline):
         """TODO: Docstring for _check_lines.
 
@@ -373,7 +381,6 @@ class DiffiosDiff(object):
         """
         yline_split = yline.split()
         xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
-        xy_lines_zipped = None
 
         if len(yline_split) != len(xline_split):
             res = []
@@ -402,21 +409,13 @@ class DiffiosDiff(object):
             yline_split = res
 
         xy_lines_zipped = zip(yline_split, xline_split)
-        for i, (x, y) in enumerate(list(xy_lines_zipped)):
+        for i, (x, y) in enumerate(xy_lines_zipped):
             if x != y:
                 yline_split[i] = y
 
         xline_without_delims = xline.replace('{{', '').replace('}}', '').replace('  ', ' ').strip()
         yline_with_vars = ' '.join(yline_split)
         return xline_without_delims == yline_with_vars
-
-    def _baseline_var_blocks(self):
-        var_blocks = []
-        for block in self.baseline.recorded:
-            for line in block:
-                if re.search(self.delimiter, line):
-                    var_blocks.append(block)
-        return var_blocks
 
     def _translate_comparison(self):
         d = self.delimiter
@@ -439,16 +438,6 @@ class DiffiosDiff(object):
             y_copy = y[:]
             for xline in x:
                 matches = re.findall(self.delimiter, xline)
-                # if matches and len(matches) == 1:
-                    # for yline in y_copy:
-                        # var = matches[0]
-                        # start = xline.index(d[0])
-                        # end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
-                        # before = yline[:start]
-                        # after = yline[end:]
-                        # translated_yline = '{0}{1}{2}'.format(before, var, after)
-                        # if translated_yline == xline:
-                            # y[y_copy.index(yline)] = xline
                 if matches:
                     for yline in y_copy:
                         translated_yline = None
