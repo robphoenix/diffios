@@ -373,11 +373,40 @@ class DiffiosDiff(object):
         """
         yline_split = yline.split()
         xline_split = ''.join(x for x in re.split('[{{|}}]', xline) if x).replace('  ', ' ').split()
+        xy_lines_zipped = None
+
+        if len(yline_split) != len(xline_split):
+            res = []
+            cur = ''
+            j = 0
+            for el in yline_split:
+                if el == xline_split[j] and cur:
+                    res.append(cur)
+                    res.append(el)
+                    j += 1
+                    cur = ''
+                elif el != xline_split[j] and cur:
+                    cur += ' '
+                    cur += el
+                elif el != xline_split[j] and (j + 1) < len(xline_split):
+                    cur = el
+                    j += 1
+                elif el == xline_split[j]:
+                    res.append(el)
+                    j += 1
+                    cur = ''
+                elif el != xline_split[j]:
+                    cur = el
+            if cur:
+                res.append(cur)
+            yline_split = res
+
         xy_lines_zipped = zip(yline_split, xline_split)
-        for i, (x, y) in enumerate(xy_lines_zipped):
+        for i, (x, y) in enumerate(list(xy_lines_zipped)):
             if x != y:
                 yline_split[i] = y
-        xline_without_delims = xline.replace('{{', '').replace('}}', '').replace('  ', ' ').rstrip()
+
+        xline_without_delims = xline.replace('{{', '').replace('}}', '').replace('  ', ' ').strip()
         yline_with_vars = ' '.join(yline_split)
         return xline_without_delims == yline_with_vars
 
@@ -410,19 +439,21 @@ class DiffiosDiff(object):
             y_copy = y[:]
             for xline in x:
                 matches = re.findall(self.delimiter, xline)
-                if matches and len(matches) == 1:
-                    for yline in y_copy:
-                        var = matches[0]
-                        start = xline.index(d[0])
-                        end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
-                        before = yline[:start]
-                        after = yline[end:]
-                        translated_yline = '{0}{1}{2}'.format(before, var, after)
-                        if translated_yline == xline:
-                            y[y_copy.index(yline)] = xline
+                # if matches and len(matches) == 1:
+                    # for yline in y_copy:
+                        # var = matches[0]
+                        # start = xline.index(d[0])
+                        # end = (xline.index(d[-1]) + 2) - len(xline) or len(yline)
+                        # before = yline[:start]
+                        # after = yline[end:]
+                        # translated_yline = '{0}{1}{2}'.format(before, var, after)
+                        # if translated_yline == xline:
+                            # y[y_copy.index(yline)] = xline
                 if matches:
                     for yline in y_copy:
-                        translated_yline = self._check_lines(yline, xline)
+                        translated_yline = None
+                        if yline.split()[0] == xline.split()[0]:
+                            translated_yline = self._check_lines(yline, xline)
                         if translated_yline:
                             y[y_copy.index(yline)] = xline
             if d[0] in ''.join(y):
