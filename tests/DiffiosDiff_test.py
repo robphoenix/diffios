@@ -169,3 +169,19 @@ def test_multiple_bgp_config_lines_with_same_first_word():
     diff = DiffiosDiff(baseline, config, [])
     assert [] == diff.additional
     assert [] == diff.missing
+
+
+def test_arse():
+    baseline = [
+        'ip prefix-list bgp-routes-out seq 5 permit {{IP_ADDRESS}}',
+        'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
+        'ip prefix-list bgp-routes-out seq 15 permit {{IP_ADDRESS}}'
+    ]
+    config = [
+        'ip prefix-list bgp-routes-out seq 5 permit 10.14.4.0/23',
+        'ip prefix-list bgp-routes-out seq 10 permit 10.25.0.12/32',
+        'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
+    ]
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    assert [] == diff.missing

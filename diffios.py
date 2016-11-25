@@ -388,6 +388,23 @@ class DiffiosDiff(object):
             else:
                 xline_split.append(el)
 
+        # If the lines being compared have the same number of elements
+        # when split, then we can be more accurate. This avoids
+        # the case where we're checking if '10' is in
+        # 'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
+        # after splitting 'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
+        # it is, but in the ip address, not after seq, and that just fucks
+        # everything up.
+        yline_split = yline.split()
+        yls = yline_split[:]
+        xls = xline_split[:]
+        if len(xline_split) == len(yline_split):
+            for i, xelem in enumerate(xline_split):
+                if '{{' in xelem:
+                    xls.remove(xelem)
+                    yls.remove(yline_split[i])
+            return xls == yls
+
         without_vars = [x for x in xline_split if '{{' not in x]
         start = 0
         comparison = []
@@ -401,7 +418,6 @@ class DiffiosDiff(object):
 
     def _translate_comparison(self):
         d = self.delimiter
-        translated = self.comparison.recorded[:]
         prod = product(self._baseline_var_blocks(), self.comparison.recorded)
         filter_prod = [(x, y) for (x, y) in prod if d[0] in ''.join(x) or d[0] in ''.join(y)]
         similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
@@ -416,23 +432,26 @@ class DiffiosDiff(object):
                 more_similar.append((x, y))
             elif d[0] in x[0] or d[0] in y[0]:
                 more_similar.append((x, y))
-        for x, y in more_similar:
-            y_copy = y[:]
+        translation = {}
+        for (x, y) in more_similar:
             for xline in x:
-                matches = re.findall(self.delimiter, xline)
-                if matches:
-                    for yline in y_copy:
-                        translated_yline = self._check_lines(xline, yline)
-                        if translated_yline:
-                            y[y_copy.index(yline)] = xline
-            if d[0] in ''.join(y):
-                try:
-                    translated[translated.index(y_copy)] = y
-                except ValueError:
-                    pass
+                for yline in y:
+                    translated_yline = self._check_lines(xline, yline)
+                    if translated_yline:
+                        translation[yline] = xline
+        translated = []
+        for block in self.comparison.recorded:
+            translated_block = []
+            for line in block:
+                if translation.get(line):
+                    translated_block.append(translation[line])
+                else:
+                    translated_block.append(line)
+            translated.append(translated_block)
         return translated
 
-    def _comparator(self, measurable, reference, translation):
+    @staticmethod
+    def _comparator(measurable, reference, translation):
         """TODO: Docstring for _comparator.
 
         Args:
