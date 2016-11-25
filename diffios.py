@@ -387,9 +387,10 @@ class DiffiosDiff(object):
                     xline_split.append(s)
             else:
                 xline_split.append(el)
+        without_vars = [x for x in xline_split if '{{' not in x]
 
         # If the lines being compared have the same number of elements
-        # when split, then we can be more accurate. This avoids
+        # when split, and only one variable, then we can be more accurate. This avoids
         # the case where we're checking if '10' is in
         # 'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
         # after splitting 'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
@@ -398,14 +399,13 @@ class DiffiosDiff(object):
         yline_split = yline.split()
         yls = yline_split[:]
         xls = xline_split[:]
-        if len(xline_split) == len(yline_split):
+        if len(xline_split) == len(yline_split) and len(xline_split) == len(without_vars) + 1:
             for i, xelem in enumerate(xline_split):
                 if '{{' in xelem:
                     xls.remove(xelem)
                     yls.remove(yline_split[i])
             return xls == yls
 
-        without_vars = [x for x in xline_split if '{{' not in x]
         start = 0
         comparison = []
         for x in without_vars:

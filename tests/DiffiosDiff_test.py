@@ -185,3 +185,17 @@ def test_prefix_lists_with_seq_value_in_ip_address():
     diff = DiffiosDiff(baseline, config, [])
     assert [] == diff.additional
     assert [] == diff.missing
+
+
+def test_dialer_interface():
+    baseline = [
+        'interface Dialer1',
+        ' description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***'
+    ]
+    config = [
+        'interface Dialer1',
+        ' description *** FTTC on PSTN:020 8777 1953  CCT:IEUK644252 ***'
+    ]
+    diff = DiffiosDiff(baseline, config, [])
+    assert [] == diff.additional
+    # assert [] == diff.missing
