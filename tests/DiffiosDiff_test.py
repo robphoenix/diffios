@@ -171,7 +171,7 @@ def test_multiple_bgp_config_lines_with_same_first_word():
     assert [] == diff.missing
 
 
-def test_arse():
+def test_prefix_lists_with_seq_value_in_ip_address():
     baseline = [
         'ip prefix-list bgp-routes-out seq 5 permit {{IP_ADDRESS}}',
         'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
