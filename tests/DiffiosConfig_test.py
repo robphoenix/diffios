@@ -9,11 +9,9 @@ except ImportError:
 
 import pytest
 
-THIS_DIR = os.path.dirname(__file__)
-sys.path.append(os.path.abspath("."))
+sys.path.insert(0, os.path.abspath('..'))
 
 from diffios import DiffiosConfig
-
 
 DEFAULT_IGNORES_FILENAME = 'diffios_ignore'
 
