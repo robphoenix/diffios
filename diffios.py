@@ -63,28 +63,103 @@ class DiffiosConfig(object):
 
     """
 
-    def __init__(self, config, ignores=None):
-        if ignores is None and os.path.exists(os.path.join(os.getcwd(), 'diffios_ignore')):
-            ignores = os.path.join(os.getcwd(), "diffios_ignore")
-        elif ignores is None:
-            ignores = []
-        self.config = self._config(config)
-        self.ignores = self._ignores(ignores)
+    def __init__(self, config, ignore_lines=None):
+        if ignore_lines is None and os.path.exists(os.path.join(os.getcwd(), 'diffios_ignore')):
+            ignore_lines = os.path.join(os.getcwd(), "diffios_ignore")
+        elif ignore_lines is None:
+            ignore_lines = []
+        self.config = self._check_data(config)
+        self.ignore_lines = self._check_data(ignore_lines)
 
-    def _config(self, data):
-        """Transforms given config data into usable format,
-            with only valid lines.
+    def _valid_config(self):
+        valid = [l.rstrip() for l in self.config if self._valid_line(l)]
+        return valid
+
+    def _group_config(self):
+        """Group config into hierarchical groups.
+
+        Groups are defined as a parent/child relationship,
+        where children lines start with a ' ', and parents
+        are the immediately preceding line that doesn't start
+        with a ' '. Blocks can be single lines where there
+        is no children. Returns the groups sorted.
+
+        Example Groups:
+            interface FastEthernet0/1
+             ip address 192.168.0.1 255.255.255.0
+             no shutdown
+
+            hostname ROUTER
 
         Args:
-            data (list|file): config as either list or file.
+            config (list): config as a list of lines.
 
         Returns:
-            list: The config as a list of valid lines.
+            list: config as a sorted list of lists, each list
+                representing a hierarchical block of config.
 
         """
-        return self._remove_invalid_lines(self._check_data(data))
+        current_group, groups = [], []
+        for line in self._valid_config():
+            if not line.startswith(' ') and current_group:
+                groups.append(current_group)
+                current_group = [line]
+            else:
+                current_group.append(line)
+        if current_group:
+            groups.append(current_group)
+        return sorted(groups)
 
-    def _ignores(self, data):
+    def _partition_group(self, group):
+        """Check for any lines to be ignored in a given group.
+        Args:
+            group (list): A single hierarchical group of config
+        Returns:
+            tuple: ignored and recorded (not ignored) lines in group
+        """
+        Partition = namedtuple("Partition", "ignored included")
+        ignored, included = [], []
+        for i, line in enumerate(group):
+            if self._ignore_line(line) and i == 0:
+                return Partition(group, included)
+            elif self._ignore_line(line):
+                ignored.append(line)
+            else:
+                included.append(line)
+        return Partition(ignored, included)
+
+    def _partition_config(self):
+        Partition = namedtuple("Partition", "ignored included")
+        included, ignored = [], []
+        for group in self._group_config():
+            partition = self._partition_group(group)
+            if partition.included:
+                included.append(partition.included)
+            if partition.ignored:
+                ignored.append(partition.ignored)
+        return Partition(ignored, included)
+
+    def included(self):
+        return self._partition_config().included
+
+    def ignored(self):
+        return self._partition_config().ignored
+
+    @property
+    def hostname(self):
+        """The hostname of the given config.
+
+        Returns:
+            str: hostname of the given config
+                or None if not found.
+
+        """
+        for line in self.config:
+            if "hostname" in line.lower():
+                return line.split()[1]
+        return None
+
+    def ignore(self):
         """Transforms given ignores data into usable format.
 
         Args:
@@ -94,7 +169,8 @@ class DiffiosConfig(object):
             list: Lines to ignore.
 
         """
-        return [l.strip().lower() for l in self._check_data(data)]
+        ignore = [line.strip().lower() for line in self.ignore_lines]
+        return ignore
 
     @staticmethod
     def _check_data(data):
@@ -111,6 +187,8 @@ class DiffiosConfig(object):
                 is not a list or file.
 
         """
+        invalid_arg = "DiffiosConfig() received an invalid argument: config={}\n"
+        unable_to_open = "DiffiosConfig() could not open '{}'"
         if isinstance(data, list):
             return data
         elif os.path.isfile(data):
@@ -118,22 +196,9 @@ class DiffiosConfig(object):
                 with open(data) as fin:
                     return fin.readlines()
             except IOError:
-                raise RuntimeError(("DiffiosConfig could not open '{}'".format(data)))
+                raise RuntimeError((unable_to_open.format(data)))
         else:
-            raise RuntimeError(("[FATAL] DiffiosConfig() received an "
-                                "invalid argument: config={}\n").format(data))
-
-    def _remove_invalid_lines(self, config):
-        """Remove invalid lines from a given config.
-
-        Args:
-            config (list): Config as a list of lines.
-
-        Returns:
-            list: Only valid lines in given config.
-
-        """
-        return [l.rstrip() for l in config if self._valid_line(l)]
+            raise RuntimeError(invalid_arg.format(data))
 
     @staticmethod
     def _valid_line(line):
@@ -149,69 +214,8 @@ class DiffiosConfig(object):
             bool: True if line is valid, False if not.
 
         """
-        lstrip = line.strip()
-        return len(lstrip) > 0 and not lstrip.startswith("!") and lstrip != '^' and lstrip != '^C'
-
-    @staticmethod
-    def _group_into_blocks(config):
-        """Group config into hierarchical blocks.
-
-        Blocks are defined as a parent/child relationship,
-        where children lines start with a ' ', and parents
-        are the immediately preceding line that doesn't start
-        with a ' '. Blocks can be single lines where there
-        is no children. Returns the blocks sorted.
-
-        Example Blocks:
-            interface FastEthernet0/1
-             ip address 192.168.0.1 255.255.255.0
-             no shutdown
-
-            hostname ROUTER
-
-        Args:
-            config (list): config as a list of lines.
-
-        Returns:
-            list: config as a sorted list of lists, each list
-                representing a hierarchical block of config.
-
-        """
-        current_group, groups = [], []
-        for line in config:
-            if not line.startswith(' ') and current_group:
-                groups.append(current_group)
-                current_group = [line]
-            else:
-                current_group.append(line)
-        if current_group:
-            groups.append(current_group)
-        return sorted(groups)
-
-    @property
-    def config_blocks(self):
-        """The config as sorted list of hierarchical blocks.
-
-        Returns:
-            list: self.config as a sorted list of lists, each list
-                representing a hierarchical block of config.
-
-        """
-        return self._group_into_blocks(self.config)
-
-    @property
-    def hostname(self):
-        """The hostname of the given config.
-
-        Returns:
-            str: hostname of the given config
-                or None if not found.
-
-        """
-        for line in self.config:
-            if "hostname" in line.lower():
-                return line.split()[1]
-        return None
+        line = line.strip()
+        return len(line) > 0 and not line.startswith("!") and line != '^' and line != '^C'
 
     def _ignore_line(self, line):
         """Check if a line should be ignored.
@@ -224,68 +228,10 @@ class DiffiosConfig(object):
                 False otherwise.
 
         """
-        for line_to_ignore in self.ignores:
+        for line_to_ignore in self.ignore_lines:
             if re.search(line_to_ignore, line.lower()):
                 return True
-
-    def _check_block(self, block):
-        """Check for any lines to be ignored in a given block.
-
-        Args:
-            block (list): A single hierarchical block of config
-
-        Returns:
-            tuple: ignored and recorded (not ignored) lines in block
-
-        """
-        ignored, recorded = [], []
-        for i, line in enumerate(block):
-            if self._ignore_line(line) and i == 0:
-                return (block, recorded)
-            elif self._ignore_line(line):
-                ignored.append(line)
-            else:
-                recorded.append(line)
-        return (ignored, recorded)
-
-    def _partition(self):
-        """Partition out lines to ignore from the config.
-
-        Returns:
-            namedtuple: list of ignored lines and list of
-                recorded (not ignored) lines
-
-        """
-        Partition = namedtuple("Partition", "ignored recorded")
-        config_blocks = self._group_into_blocks(self.config)
-        ignored, recorded = [], []
-        for block in config_blocks:
-            ignore, record = self._check_block(block)
-            if ignore:
-                ignored.append(ignore)
-            if record:
-                recorded.append(record)
-        return Partition(ignored, recorded)
-
-    @property
-    def ignored(self):
-        """Lines in the config that are being ignored.
-
-        Returns:
-            list: ignored lines
-
-        """
-        return self._partition().ignored
-
-    @property
-    def recorded(self):
-        """Lines in the config that are being recorded (not ignored).
-
-        Returns:
-            list: recorded (not ignored) lines
-
-        """
-        return self._partition().recorded
+        return False
 
 
 class DiffiosDiff(object):
