@@ -373,16 +373,18 @@ class DiffiosDiff(object):
         """TODO: Docstring for _check_lines.
 
         Args:
-            line (TODO): TODO
-            vars (TODO): TODO
-            indexes (TODO): TODO
+            xline (TODO): TODO
+            yline (TODO): TODO
 
         Returns: TODO
 
         """
-        print('xline - ', xline)
-        print('yline - ', yline)
-        xline_re = re.sub(r'{{[^{}]+}}', '(.+)', xline).replace('*', '\*')
+        re_metacharacters = ['*', '.']
+        for char in re_metacharacters:
+            if char in xline:
+                xline = xline.replace(char, '\{}'.format(char))
+        print(xline)
+        xline_re = re.sub(r'{{[^{}]+}}', '(.+)', xline)
         match = re.search(xline_re, yline)
         if match:
             return match.group(0) == yline
