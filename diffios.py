@@ -6,6 +6,8 @@ import os
 from collections import namedtuple
 from itertools import product
 
+DELIMITER = r'{{[^{}]+}}'
+
 
 class DiffiosConfig(object):
 
@@ -313,11 +315,9 @@ class DiffiosDiff(object):
             ignore_file (TODO): TODO
 
         """
-        # TODO: make it so DiffiosConf objects can be passed in also
-        # TODO: confirm existence of files
         self.baseline = DiffiosConfig(baseline, ignore_file)
         self.comparison = DiffiosConfig(comparison, ignore_file)
-        self.delimiter = r'{{[^{}]+}}'
+        self.delimiter = DELIMITER
 
     def _baseline_var_blocks(self):
         var_blocks = []
