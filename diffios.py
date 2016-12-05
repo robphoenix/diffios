@@ -71,20 +71,6 @@ class DiffiosConfig(object):
         self.config = self._config(config)
         self.ignores = self._ignores(ignores)
 
-    @property
-    def contains_variables(self, delimiter=None):
-        """TODO: Docstring for contains_variables.
-
-        Kwargs:
-            delimiter (TODO): TODO
-
-        Returns: TODO
-
-        """
-        if delimiter is None:
-            delimiter = re.compile(r'{{[^{}]+}}')
-        return any(re.search(delimiter, line) for line in self.config)
-
     def _config(self, data):
         """Transforms given config data into usable format,
             with only valid lines.
