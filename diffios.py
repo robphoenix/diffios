@@ -380,41 +380,14 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        xline_split = []
-        for el in re.split('({{[^{}]+}})', xline):
-            if '{{' not in el:
-                for s in el.split():
-                    xline_split.append(s)
-            else:
-                xline_split.append(el)
-        without_vars = [x for x in xline_split if '{{' not in x]
-
-        # If the lines being compared have the same number of elements
-        # when split, and only one variable, then we can be more accurate. This avoids
-        # the case where we're checking if '10' is in
-        # 'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
-        # after splitting 'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
-        # it is, but in the ip address, not after seq, and that just fucks
-        # everything up.
-        yline_split = yline.split()
-        yls = yline_split[:]
-        xls = xline_split[:]
-        if len(xline_split) == len(yline_split) and len(xline_split) == len(without_vars) + 1:
-            for i, xelem in enumerate(xline_split):
-                if '{{' in xelem:
-                    xls.remove(xelem)
-                    yls.remove(yline_split[i])
-            return xls == yls
-
-        start = 0
-        comparison = []
-        for x in without_vars:
-            if x in yline[start:]:
-                comparison.append(x)
-                start += (len(x) + 1)
-            else:
-                return False
-        return comparison == without_vars
+        print('xline - ', xline)
+        print('yline - ', yline)
+        xline_re = re.sub(r'{{[^{}]+}}', '(.+)', xline).replace('*', '\*')
+        match = re.search(xline_re, yline)
+        if match:
+            return match.group(0) == yline
+        else:
+            return False
 
     def _translate_comparison(self):
         d = self.delimiter
