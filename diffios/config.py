@@ -223,21 +223,3 @@ class DiffiosConfig(object):
             if re.search(line_to_ignore, line.lower()):
                 return True
         return False
-
-
-class Baseline(object):
-
-    """Docstring for Baseline. """
-
-    def __init__(self, config, ignore_lines=None):
-        """TODO: to be defined1.
-
-        Args:
-            config (TODO): TODO
-            ignore_lines (TODO): TODO
-
-
-        """
-        self._config = config
-        self._ignore_lines = ignore_lines
-        self.config = DiffiosConfig(self._config, self._ignore_lines)
