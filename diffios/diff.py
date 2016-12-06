@@ -3,12 +3,11 @@
 
 import re
 import os
-from collections import namedtuple
 from itertools import product
 
+from diffios import DiffiosConfig
+
 DELIMITER = r'{{[^{}]+}}'
-
-
 
 
 class DiffiosDiff(object):

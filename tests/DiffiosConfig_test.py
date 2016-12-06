@@ -28,7 +28,7 @@ def test_raises_error_if_not_config_file_does_not_exist():
     """
     Should raise Runtime Error if given config file does not exist.
     """
-    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+    with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
         with pytest.raises(RuntimeError):
             DiffiosConfig('file_that_does_not_exist')
@@ -57,13 +57,11 @@ def test_uses_default_ignores_file_if_it_exists(ignores_file):
     """
     config = ['hostname ROUTER']
     ignores_data = mock.mock_open(read_data=ignores_file)
-    expected = ignores_file.lower().split('\n')
-    with mock.patch('diffios.os.path') as mock_path:
+    with mock.patch('diffios.config.os.path') as mock_path:
         mock_path.exists.return_value = True
-        with mock.patch('diffios.open', ignores_data, create=True) as mock_open:
-            actual = DiffiosConfig(config).ignore()
-            mock_open.assert_called_once_with(os.path.join(os.getcwd(), DEFAULT_IGNORES_FILENAME))
-            assert expected == actual
+        with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
+            DiffiosConfig(config).ignore_lines
+            mock_open.assert_called_once_with(os.path.join('..', 'diffios_ignore'))
 
 
 def test_ignores_is_empty_list_if_no_default_ignore_file():
@@ -71,7 +69,7 @@ def test_ignores_is_empty_list_if_no_default_ignore_file():
     Ignores should be empty if there is no default ignores file,
     and no ignores parameter is passed.
     """
-    with mock.patch('diffios.os.path') as mock_path:
+    with mock.patch('diffios.config.os.path') as mock_path:
         mock_path.exists.return_value = False
         config = ['hostname ROUTER']
         assert DiffiosConfig(config).ignore_lines == []
@@ -137,10 +135,10 @@ def test_config_is_grouped_correctly_with_file(baseline, baseline_blocks):
     Should return valid config as list of hierarchical blocks,
     from a config given in a file.
     """
-    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+    with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
         config_data = mock.mock_open(read_data=baseline)
-        with mock.patch('diffios.open', config_data, create=True) as mock_open:
+        with mock.patch('diffios.config.open', config_data, create=True) as mock_open:
             actual = DiffiosConfig('baseline.conf', ignore_lines=[]).included()
             mock_open.assert_called_once_with('baseline.conf')
             assert baseline_blocks == actual
@@ -153,9 +151,9 @@ def test_ignore_lines_from_file(ignores_file):
     config = ['hostname ROUTER']
     expected = ignores_file.lower().split('\n')
     ignores_data = mock.mock_open(read_data=ignores_file)
-    with mock.patch('diffios.os.path.isfile') as mock_isfile:
+    with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
-        with mock.patch('diffios.open', ignores_data, create=True) as mock_open:
+        with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
             actual = DiffiosConfig(config, ignore_lines='ignores_file').ignore()
             mock_open.assert_called_once_with('ignores_file')
             assert expected == actual

@@ -2,7 +2,9 @@ import os
 import sys
 
 sys.path.append(os.path.abspath("."))
-from diffios import DiffiosDiff
+sys.path.insert(0, os.path.abspath('..'))
+
+from diffios.diff import DiffiosDiff
 
 
 def test_different_vlan_interface_config(ignores):
