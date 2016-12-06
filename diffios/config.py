@@ -33,29 +33,23 @@ class DiffiosConfig(object):
     ... 'hostname ROUTER',
     ... '!',
     ... 'interface FastEthernet0/1',
-    ... ' description **Link to Core**',
+    ... ' description *** Link to Core ***',
     ... ' ip address 192.168.0.1 255.255.255.0']
-    >>> ignores = [
+    >>> ignore = [
     ... 'hostname',
     ... '^ description']
-    >>> conf = DiffiosConfig(config, ignores=ignores)
+    >>> conf = DiffiosConfig(config, ignore)
+    >>> conf.hostname
+    'ROUTER'
     >>> conf.config
-    ['hostname ROUTER', \
-'interface FastEthernet0/1', \
-' description **Link to Core**', \
-' ip address 192.168.0.1 255.255.255.0']
-    >>> conf.ignores
+    ['!', 'hostname ROUTER', '!', 'interface FastEthernet0/1', ' description \
+*** Link to Core ***', ' ip address 192.168.0.1 255.255.255.0']
+    >>> conf.ignore_lines
     ['hostname', '^ description']
-    >>> conf.config_blocks
-    [['hostname ROUTER'], \
-['interface FastEthernet0/1', \
-' description **Link to Core**', \
-' ip address 192.168.0.1 255.255.255.0']]
-    >>> conf.ignored
-    [['hostname ROUTER'], [' description **Link to Core**']]
-    >>> conf.recorded
-    [['interface FastEthernet0/1', \
-' ip address 192.168.0.1 255.255.255.0']]
+    >>> conf.ignored()
+    [['hostname ROUTER'], [' description *** Link to Core ***']]
+    >>> conf.included()
+    [['interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.0']]
 
     """
 
@@ -66,7 +60,7 @@ class DiffiosConfig(object):
         elif ignore_lines is None:
             ignore_lines = []
         self.config = self._check_data(config)
-        self.ignore_lines = self._check_data(ignore_lines)
+        self.ignore_lines = self._ignore(self._check_data(ignore_lines))
 
     def _valid_config(self):
         valid = [l.rstrip() for l in self.config if self._valid_line(l)]
@@ -156,7 +150,7 @@ class DiffiosConfig(object):
                 return line.split()[1]
         return None
 
-    def ignore(self):
+    def _ignore(self, ignore):
         """Transforms given ignores data into usable format.
 
         Args:
@@ -166,7 +160,7 @@ class DiffiosConfig(object):
             list: Lines to ignore.
 
         """
-        ignore = [line.strip().lower() for line in self.ignore_lines]
+        ignore = [line.strip().lower() for line in ignore]
         return ignore
 
     @staticmethod

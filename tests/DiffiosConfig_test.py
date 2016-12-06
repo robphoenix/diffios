@@ -154,7 +154,7 @@ def test_ignore_lines_from_file(ignores_file):
     with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
         with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
-            actual = DiffiosConfig(config, ignore_lines='ignores_file').ignore()
+            actual = DiffiosConfig(config, ignore_lines='ignores_file').ignore_lines
             mock_open.assert_called_once_with('ignores_file')
             assert expected == actual
 
@@ -165,7 +165,7 @@ def test_ignore_lines_from_list(ignores_file):
     """
     config = ['hostname ROUTER']
     expected = ignores_file.lower().split('\n')
-    actual = DiffiosConfig(config, ignore_lines=ignores_file.split('\n')).ignore()
+    actual = DiffiosConfig(config, ignore_lines=ignores_file.split('\n')).ignore_lines
     assert expected == actual
 
 

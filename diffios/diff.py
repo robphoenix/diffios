@@ -29,7 +29,7 @@ class DiffiosDiff(object):
 
     def _baseline_var_blocks(self):
         var_blocks = []
-        for block in self.baseline.recorded:
+        for block in self.baseline.included():
             for line in block:
                 if re.search(self.delimiter, line):
                     var_blocks.append(block)
@@ -60,7 +60,7 @@ class DiffiosDiff(object):
 
     def _translate_comparison(self):
         d = self.delimiter
-        prod = product(self._baseline_var_blocks(), self.comparison.recorded)
+        prod = product(self._baseline_var_blocks(), self.comparison.included())
         filter_prod = [(x, y) for (x, y) in prod if d[0] in ''.join(x) or d[0] in ''.join(y)]
         similar = [(x, y) for (x, y) in filter_prod if x[0].split()[0] == y[0].split()[0]]
         more_similar = []
@@ -82,7 +82,7 @@ class DiffiosDiff(object):
                     if translated_yline:
                         translation[yline] = xline
         translated = []
-        for block in self.comparison.recorded:
+        for block in self.comparison.included():
             translated_block = []
             for line in block:
                 if translation.get(line):
@@ -142,8 +142,8 @@ class DiffiosDiff(object):
 
         """
         measurable = self._translate_comparison()
-        reference = self.baseline.recorded
-        translation = self.comparison.recorded
+        reference = self.baseline.included()
+        translation = self.comparison.included()
         return self._comparator(measurable, reference, translation)
 
     @property
@@ -153,9 +153,9 @@ class DiffiosDiff(object):
         Returns: TODO
 
         """
-        measurable = self.baseline.recorded
+        measurable = self.baseline.included()
         reference = self._translate_comparison()
-        translation = self.baseline.recorded
+        translation = self.baseline.included()
         return self._comparator(measurable, reference, translation)
 
     @property
