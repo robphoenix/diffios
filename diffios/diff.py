@@ -7,6 +7,8 @@ import os
 from diffios import DiffiosConfig
 
 DELIMITER = r'{{[^{}]+}}'
+DELIMITER_START = '{{'
+DELIMITER_END = '}}'
 
 
 class DiffiosDiff(object):
@@ -48,33 +50,60 @@ class DiffiosDiff(object):
         return {group[0]: group[1:] for group in self.comparison.included()}
 
     def _search(self):
-        queue = self._baseline_queue()
-        hash_table = self._comparison_hash_table()
+        baseline = self._baseline_queue()
+        comparison = self._comparison_hash_table()
         missing = []
-        while queue:
-            baseline_group = queue.pop()
-            baseline_parent = group[0]
-            baseline_children = group[1:]
-            baseline_family = ' '.join(group)
-            if '{{' in baseline_family:
+        additional = []
+        while baseline:
+            baseline_group = baseline.pop()
+            baseline_parent = baseline_group[0]
+            baseline_children = baseline_group[1:]
+            baseline_family = ' '.join(baseline_group)
+            if DELIMITER_START in baseline_family:
                 # binary search
-                pass
+                return 'not implemented yet'
             else:
                 missing_group = []
-                comparison_children = hash_table.pop(baseline_parent, -1)
+                # check the presence of the baseline parent in the comparison
+                # hash table
+                comparison_children = comparison.pop(baseline_parent, -1)
+                # if -1 returned then the baseline parent and any children are
+                # not present in the comparison hash table
                 if comparison_children == -1:
                     missing.append(baseline_group)
+                # if comparison_children is not an empty list or -1 then we
+                # have to compare them against the baseline children
                 elif comparison_children:
-                    comparison_parent = baseline_parent
                     for baseline_child in baseline_children:
+                        # if the baseline child is not in the comparison
+                        # children list then we add it to the list of missing
+                        # lines. If it's the first one, missing_group will be
+                        # empty, and we have to add it's parent as well.
                         if baseline_child not in comparison_children and not missing_group:
                             missing_group.append(baseline_parent)
                             missing_group.append(baseline_child)
                         elif baseline_child not in comparison_children:
                             missing_group.append(baseline_child)
+                        # if the line is in both baseline and comparison
+                        # children then we need to remove it from comparison
+                        # children
+                        elif baseline_child in comparison_children:
+                            comparison_children.remove(baseline_child)
+                    # any lines left in comparison children are additional so
+                    # we need to add them, along with their parent, to the list
+                    # of additional lines
+                    if comparison_children:
+                        additional.append([baseline_parent] + comparison_children)
                     if missing_group:
                         missing.append(missing_group)
-        additional = hash_table
+        additional = sorted([[k] + v for k, v in comparison.items()] + additional)
+        return {'missing': missing, 'additional': additional}
+
+    def additional(self):
+        return sorted(self._search()['additional'])
+
+    def missing(self):
+        return sorted(self._search()['missing'])
 
     @property
     def pprint_additional(self):
