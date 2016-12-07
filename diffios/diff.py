@@ -3,6 +3,7 @@
 
 import re
 import os
+from collections import namedtuple
 
 from diffios import DiffiosConfig
 
@@ -49,6 +50,33 @@ class DiffiosDiff(object):
     def _comparison_hash_table(self):
         return {group[0]: group[1:] for group in self.comparison.included()}
 
+    def _child_lookup(self, baseline_parent, baseline_children, comparison_children):
+        ChildComparison = namedtuple('ChildComparison', 'additional missing')
+        missing = []
+        for baseline_child in baseline_children:
+            # if the baseline child is not in the comparison
+            # children list then we add it to the list of missing
+            # lines. If it's the first one, missing will be
+            # empty, and we have to add it's parent as well.
+            if baseline_child not in comparison_children and not missing:
+                missing.append(baseline_parent)
+                missing.append(baseline_child)
+            elif baseline_child not in comparison_children:
+                missing.append(baseline_child)
+            # if the line is in both baseline and comparison
+            # children then we need to remove it from comparison
+            # children
+            elif baseline_child in comparison_children:
+                comparison_children.remove(baseline_child)
+        # any lines left in comparison children are additional so
+        # we need to add them, along with their parent, to the list
+        # of additional lines
+        if comparison_children:
+            additional = [baseline_parent] + comparison_children
+        else:
+            additional = []
+        return ChildComparison(additional, missing)
+
     def _search(self):
         baseline = self._baseline_queue()
         comparison = self._comparison_hash_table()
@@ -63,7 +91,6 @@ class DiffiosDiff(object):
                 # binary search
                 return 'not implemented yet'
             else:
-                missing_group = []
                 # check the presence of the baseline parent in the comparison
                 # hash table
                 comparison_children = comparison.pop(baseline_parent, -1)
@@ -74,28 +101,11 @@ class DiffiosDiff(object):
                 # if comparison_children is not an empty list or -1 then we
                 # have to compare them against the baseline children
                 elif comparison_children:
-                    for baseline_child in baseline_children:
-                        # if the baseline child is not in the comparison
-                        # children list then we add it to the list of missing
-                        # lines. If it's the first one, missing_group will be
-                        # empty, and we have to add it's parent as well.
-                        if baseline_child not in comparison_children and not missing_group:
-                            missing_group.append(baseline_parent)
-                            missing_group.append(baseline_child)
-                        elif baseline_child not in comparison_children:
-                            missing_group.append(baseline_child)
-                        # if the line is in both baseline and comparison
-                        # children then we need to remove it from comparison
-                        # children
-                        elif baseline_child in comparison_children:
-                            comparison_children.remove(baseline_child)
-                    # any lines left in comparison children are additional so
-                    # we need to add them, along with their parent, to the list
-                    # of additional lines
-                    if comparison_children:
-                        additional.append([baseline_parent] + comparison_children)
-                    if missing_group:
-                        missing.append(missing_group)
+                    child_lookup = self._child_lookup(baseline_parent, baseline_children, comparison_children)
+                    if child_lookup.additional:
+                        additional.append(child_lookup.additional)
+                    if child_lookup.missing:
+                        missing.append(child_lookup.missing)
         additional = sorted([[k] + v for k, v in comparison.items()] + additional)
         return {'missing': missing, 'additional': additional}
 
