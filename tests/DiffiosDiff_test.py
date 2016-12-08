@@ -38,6 +38,36 @@ def test_basic_comparison_without_variables():
     assert expected_missing == diff.missing()
 
 
+def test_basic_comparison_with_variables():
+    baseline = [
+        'interface FastEthernet0/1',
+        ' description {{ description }}',
+        ' no ip address',
+        ' shutdown',
+        'interface Vlan1',
+        ' ip address {{ ip address }}'
+    ]
+    comparison = [
+        'interface FastEthernet0/1',
+        ' description link to core',
+        ' ip address 192.168.0.1 255.255.255.0',
+    ]
+    expected_additional = [[
+        'interface FastEthernet0/1',
+        ' ip address 192.168.0.1 255.255.255.0',
+    ]]
+    expected_missing = sorted([
+        ['interface FastEthernet0/1',
+         ' no ip address',
+         ' shutdown'],
+        ['interface Vlan1',
+         ' ip address 10.10.10.10']
+    ])
+    diff = DiffiosDiff(baseline, comparison)
+    assert expected_additional == diff.additional()
+    assert expected_missing == diff.missing()
+
+
 def test_different_vlan_interface_config(ignores):
     pytest.skip('Not properly implemented yet')
     baseline = [
