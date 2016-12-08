@@ -4,6 +4,7 @@
 import re
 import os
 from collections import namedtuple
+from pprint import pprint
 
 from diffios import DiffiosConfig
 
@@ -33,7 +34,7 @@ class DiffiosDiff(object):
 
     @staticmethod
     def _compare_lines(target, guess):
-        re_metacharacters = ['*', '.']
+        re_metacharacters = ['*']
         for char in re_metacharacters:
             if char in target:
                 target = target.replace(char, '\{}'.format(char))
@@ -129,11 +130,12 @@ class DiffiosDiff(object):
         while with_variables:
             target = with_variables.pop()
             target_parent = target[0]
-            target_children = target[1:]
+            target_children = sorted(target[1:])
             parent_search = self._binary_search(target_parent, comparison.keys())
             if parent_search:
                 missing_children = []
-                comparison_children = comparison.pop(parent_search)
+                comparison_children = sorted(comparison.pop(parent_search))
+                pprint(target_children)
                 if comparison_children:
                     while target_children:
                         child_target = target_children.pop()

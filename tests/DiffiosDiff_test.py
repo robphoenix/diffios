@@ -98,9 +98,9 @@ def test_different_vlan_interface_config(ignores):
 def test_different_fast_interface_config_ignoring_description(int_baseline, int_comparison):
     expected_additional = [[
         'interface FastEthernet0/5',
-        ' switchport trunk native vlan 999',
+        ' switchport mode trunk',
         ' switchport trunk allowed vlan 510,511,999',
-        ' switchport mode trunk'
+        ' switchport trunk native vlan 999'
     ]]
     expected_missing = [[
         'interface FastEthernet0/5',
@@ -211,18 +211,18 @@ def test_multiple_bgp_config_lines_with_same_first_word():
         ' network {{LAN_NET}} mask 255.255.248.0',
         ' network {{LOOPBACK_IP}} mask 255.255.255.255',
         ' neighbour {{PE_IP}} remote-as 1234',
-        # ' neighbour {{PE_IP}} ebgp-multihop 2',
+        ' neighbour {{PE_IP}} ebgp-multihop 2',
         ' neighbour {{PE_IP}} update-source GigabitEthernet0/0',
-        # ' neighbour {{PE_IP}} timers 10 30',
-        # ' neighbour {{PE_IP}} send-community',
-        # ' neighbour {{PE_IP}} soft-reconfiguration inbound'
+        ' neighbour {{PE_IP}} timers 10 30',
+        ' neighbour {{PE_IP}} send-community',
+        ' neighbour {{PE_IP}} soft-reconfiguration inbound'
     ]
     config = [
         'router bgp 65500',
         ' network 10.100.10.0 mask 255.255.248.0',
         ' network 10.200.10.0 mask 255.255.255.255',
         ' neighbour 10.200.10.10 remote-as 1234',
-        # ' neighbour 10.200.10.10 ebgp-multihop 2',
+        ' neighbour 10.200.10.10 ebgp-multihop 2',
         ' neighbour 10.200.10.10 update-source GigabitEthernet0/0',
         # ' neighbour 10.200.10.10 timers 10 30',
         # ' neighbour 10.200.10.10 send-community',
