@@ -78,16 +78,18 @@ class DiffiosDiff(object):
         return ChildComparison(additional, missing)
 
     def _binary_search(self, target, search_array):
+        if not search_array:
+            return None
         sorted_array = sorted(search_array)
         low = 0
         high = len(sorted_array) - 1
         while low <= high:
-            mid = round((high - low) / 2)
+            mid = (high + low) // 2
             guess = sorted_array[mid]
             compare_lines = self._compare_lines(target, guess)
             if compare_lines:
                 return guess
-            if guess > target:
+            if target < guess:
                 high = mid - 1
             else:
                 low = mid + 1
@@ -126,33 +128,28 @@ class DiffiosDiff(object):
                         missing.append(child_lookup.missing)
         while with_variables:
             target = with_variables.pop()
-            print('target: ', target)
-            print('with variables: ', with_variables)
             target_parent = target[0]
             target_children = target[1:]
-            search = self._binary_search(target_parent, comparison.keys())
-            print('search: ', search)
-            # if search:
-                # missing_children = []
-                # comparison_children = comparison.pop(search)
-                # if comparison_children and target_children:
-                    # while target_children:
-                        # child_target = target_children.pop()
-                        # search = self._binary_search(child_target, comparison_children)
-                        # if search:
-                            # comparison_children.remove(search)
-                        # else:
-                            # missing_children.append(child_target)
-                        # if target_children:
-                            # missing.append([target_parent] + target_children)
-                # if comparison_children:
-                    # additional.append([search] + comparison_children)
-                # if target_children:
-                    # missing.append(target)
-                # if missing_children:
-                    # missing.append([target_parent] + missing_children)
-            # else:
-                # missing.append(target)
+            parent_search = self._binary_search(target_parent, comparison.keys())
+            if parent_search:
+                missing_children = []
+                comparison_children = comparison.pop(parent_search)
+                if comparison_children:
+                    while target_children:
+                        child_target = target_children.pop()
+                        child_search = self._binary_search(child_target, comparison_children)
+                        if child_search:
+                            comparison_children.remove(child_search)
+                        else:
+                            missing_children.append(child_target)
+                else:
+                    missing_children = target_children
+                if comparison_children:
+                    additional.append([parent_search] + comparison_children)
+                if missing_children:
+                    missing.append([target_parent] + sorted(missing_children))
+            else:
+                missing.append(target)
         additional = sorted([[k] + v for k, v in comparison.items()] + additional)
         return {'missing': missing, 'additional': additional}
 

@@ -1,6 +1,5 @@
 import os
 import sys
-import pytest
 
 sys.path.append(os.path.abspath("."))
 sys.path.insert(0, os.path.abspath('..'))
@@ -61,7 +60,7 @@ def test_basic_comparison_with_variables():
          ' no ip address',
          ' shutdown'],
         ['interface Vlan1',
-         ' ip address 10.10.10.10']
+         ' ip address {{ ip address }}']
     ])
     diff = DiffiosDiff(baseline, comparison)
     assert expected_additional == diff.additional()
@@ -69,7 +68,6 @@ def test_basic_comparison_with_variables():
 
 
 def test_different_vlan_interface_config(ignores):
-    pytest.skip('Not properly implemented yet')
     baseline = [
         'hostname {{ hostname }}',
         'interface Vlan1',
@@ -98,7 +96,6 @@ def test_different_vlan_interface_config(ignores):
 
 
 def test_different_fast_interface_config_ignoring_description(int_baseline, int_comparison):
-    pytest.skip('Not properly implemented yet')
     expected_additional = [[
         'interface FastEthernet0/5',
         ' switchport trunk native vlan 999',
@@ -143,110 +140,100 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
 
 
 def test_multiple_vars_ip_route():
-    pytest.skip('Not properly implemented yet')
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_vars_ip_route_without_splaces():
-    pytest.skip('Not properly implemented yet')
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{LAN_NET}} 255.255.0.0 {{VLAN_99_IP}} tag 100']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_vars_ip_route_duplicated_ip():
-    pytest.skip('Not properly implemented yet')
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.10 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_vars_ip_route_similar_ip():
-    pytest.skip('Not properly implemented yet')
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.100 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_triple_vars_ip_route():
-    pytest.skip('Not properly implemented yet')
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100 and this']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100 and {{ this }}']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_vars_with_regex_metacharacters():
-    pytest.skip('Not properly implemented yet')
     baseline = ['description *** ADSL {{PSTN_NO}} {{CCT_ID}} ***',
                 'description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***']
     config = ['description *** ADSL 12345 67890 ***',
               'description *** FTTC on PSTN:12345 CCT:67890 ***']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_single_multiple_word_vars():
-    pytest.skip('Not properly implemented yet')
     baseline = ['interface FastEthernet0/5', ' description {{ DESCRIPTION }}']
     config = ['interface FastEthernet0/5', ' description Data and Voice Access Port']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_multiple_word_vars():
-    pytest.skip('Not properly implemented yet')
     baseline = ['interface FastEthernet0/5', ' description {{ VLAN }} connection to {{ BACKUP }}']
     config = ['interface FastEthernet0/5', ' description Vlan 99 connection to Core Backup']
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_multiple_bgp_config_lines_with_same_first_word():
-    pytest.skip('Not properly implemented yet')
     baseline = [
         'router bgp {{BGP_AS}}',
         ' network {{LAN_NET}} mask 255.255.248.0',
         ' network {{LOOPBACK_IP}} mask 255.255.255.255',
         ' neighbour {{PE_IP}} remote-as 1234',
-        ' neighbour {{PE_IP}} ebgp-multihop 2',
+        # ' neighbour {{PE_IP}} ebgp-multihop 2',
         ' neighbour {{PE_IP}} update-source GigabitEthernet0/0',
-        ' neighbour {{PE_IP}} timers 10 30',
-        ' neighbour {{PE_IP}} send-community',
-        ' neighbour {{PE_IP}} soft-reconfiguration inbound'
+        # ' neighbour {{PE_IP}} timers 10 30',
+        # ' neighbour {{PE_IP}} send-community',
+        # ' neighbour {{PE_IP}} soft-reconfiguration inbound'
     ]
     config = [
         'router bgp 65500',
         ' network 10.100.10.0 mask 255.255.248.0',
         ' network 10.200.10.0 mask 255.255.255.255',
         ' neighbour 10.200.10.10 remote-as 1234',
-        ' neighbour 10.200.10.10 ebgp-multihop 2',
+        # ' neighbour 10.200.10.10 ebgp-multihop 2',
         ' neighbour 10.200.10.10 update-source GigabitEthernet0/0',
-        ' neighbour 10.200.10.10 timers 10 30',
-        ' neighbour 10.200.10.10 send-community',
-        ' neighbour 10.200.10.10 soft-reconfiguration inbound'
+        # ' neighbour 10.200.10.10 timers 10 30',
+        # ' neighbour 10.200.10.10 send-community',
+        # ' neighbour 10.200.10.10 soft-reconfiguration inbound'
     ]
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    # assert [] == diff.missing()
 
 
 def test_prefix_lists_with_seq_value_in_ip_address():
-    pytest.skip('Not properly implemented yet')
     baseline = [
         'ip prefix-list bgp-routes-out seq 5 permit {{IP_ADDRESS}}',
         'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
@@ -258,12 +245,11 @@ def test_prefix_lists_with_seq_value_in_ip_address():
         'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
     ]
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
 
 
 def test_dialer_interface():
-    pytest.skip('Not properly implemented yet')
     baseline = [
         'interface Dialer1',
         ' description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***'
@@ -273,5 +259,5 @@ def test_dialer_interface():
         ' description *** FTTC on PSTN:020 8777 1953  CCT:IEUK644252 ***'
     ]
     diff = DiffiosDiff(baseline, config, [])
-    assert [] == diff.additional
-    assert [] == diff.missing
+    assert [] == diff.additional()
+    assert [] == diff.missing()
