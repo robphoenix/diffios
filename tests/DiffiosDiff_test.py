@@ -224,13 +224,13 @@ def test_multiple_bgp_config_lines_with_same_first_word():
         ' neighbour 10.200.10.10 remote-as 1234',
         ' neighbour 10.200.10.10 ebgp-multihop 2',
         ' neighbour 10.200.10.10 update-source GigabitEthernet0/0',
-        # ' neighbour 10.200.10.10 timers 10 30',
-        # ' neighbour 10.200.10.10 send-community',
-        # ' neighbour 10.200.10.10 soft-reconfiguration inbound'
+        ' neighbour 10.200.10.10 timers 10 30',
+        ' neighbour 10.200.10.10 send-community',
+        ' neighbour 10.200.10.10 soft-reconfiguration inbound'
     ]
     diff = DiffiosDiff(baseline, config, [])
     assert [] == diff.additional()
-    # assert [] == diff.missing()
+    assert [] == diff.missing()
 
 
 def test_prefix_lists_with_seq_value_in_ip_address():

@@ -4,7 +4,6 @@
 import re
 import os
 from collections import namedtuple
-from pprint import pprint
 
 from diffios import DiffiosConfig
 
@@ -55,28 +54,31 @@ class DiffiosDiff(object):
         ChildComparison = namedtuple('ChildComparison', 'additional missing')
         missing = []
         for baseline_child in baseline_children:
-            # if the baseline child is not in the comparison
-            # children list then we add it to the list of missing
-            # lines. If it's the first one, missing will be
-            # empty, and we have to add it's parent as well.
             if baseline_child not in comparison_children and not missing:
                 missing.append(baseline_parent)
                 missing.append(baseline_child)
             elif baseline_child not in comparison_children:
                 missing.append(baseline_child)
-            # if the line is in both baseline and comparison
-            # children then we need to remove it from comparison
-            # children
             elif baseline_child in comparison_children:
                 comparison_children.remove(baseline_child)
-        # any lines left in comparison children are additional so
-        # we need to add them, along with their parent, to the list
-        # of additional lines
         if comparison_children:
             additional = [baseline_parent] + comparison_children
         else:
             additional = []
         return ChildComparison(additional, missing)
+
+    def _child_search(self, target_children, comparison_children):
+        ChildComparison = namedtuple('ChildComparison', 'additional missing')
+        missing = []
+        while target_children:
+            child_target = target_children.pop()
+            child_search = self._binary_search(
+                child_target, comparison_children)
+            if child_search:
+                comparison_children.remove(child_search)
+            else:
+                missing.append(child_target)
+        return ChildComparison(comparison_children, sorted(missing))
 
     def _binary_search(self, target, search_array):
         if not search_array:
@@ -96,63 +98,57 @@ class DiffiosDiff(object):
                 low = mid + 1
         return None
 
-    def _search(self):
-        baseline = self._baseline_queue()
-        comparison = self._comparison_hash()
-        missing = []
-        additional = []
-        with_variables = []
+    def _hash_lookup(self, baseline, comparison):
+        missing, additional, with_vars = [], [], []
         while baseline:
             baseline_group = baseline.pop()
             baseline_parent = baseline_group[0]
             baseline_children = baseline_group[1:]
             baseline_family = ' '.join(baseline_group)
             if DELIMITER_START in baseline_family:
-                # let's deal with these later, when there's potentially less
-                # lines to search through.
-                with_variables.append(baseline_group)
+                with_vars.append(baseline_group)
             else:
-                # check the presence of the baseline parent in the comparison
-                # hash table
                 comparison_children = comparison.pop(baseline_parent, -1)
-                # if -1 returned then the baseline parent and any children are
-                # not present in the comparison hash table
                 if comparison_children == -1:
                     missing.append(baseline_group)
-                # if comparison_children is not an empty list or -1 then we
-                # have to compare them against the baseline children
                 elif comparison_children:
-                    child_lookup = self._child_lookup(baseline_parent, baseline_children, comparison_children)
+                    child_lookup = self._child_lookup(
+                        baseline_parent, baseline_children, comparison_children)
                     if child_lookup.additional:
                         additional.append(child_lookup.additional)
                     if child_lookup.missing:
                         missing.append(child_lookup.missing)
-        while with_variables:
-            target = with_variables.pop()
+        return (missing, additional, with_vars)
+
+    def _with_vars_search(self, with_vars, comparison, missing, additional):
+        while with_vars:
+            target = with_vars.pop()
             target_parent = target[0]
             target_children = sorted(target[1:])
-            parent_search = self._binary_search(target_parent, comparison.keys())
+            parent_search = self._binary_search(
+                target_parent, comparison.keys())
             if parent_search:
-                missing_children = []
                 comparison_children = sorted(comparison.pop(parent_search))
-                pprint(target_children)
-                if comparison_children:
-                    while target_children:
-                        child_target = target_children.pop()
-                        child_search = self._binary_search(child_target, comparison_children)
-                        if child_search:
-                            comparison_children.remove(child_search)
-                        else:
-                            missing_children.append(child_target)
-                else:
-                    missing_children = target_children
-                if comparison_children:
-                    additional.append([parent_search] + comparison_children)
-                if missing_children:
-                    missing.append([target_parent] + sorted(missing_children))
+                child_search = self._child_search(
+                    target_children, comparison_children)
+                if child_search.additional:
+                    additional.append(
+                        [parent_search] + child_search.additional)
+                if child_search.missing:
+                    missing.append([target_parent] + child_search.missing)
             else:
                 missing.append(target)
-        additional = sorted([[k] + v for k, v in comparison.items()] + additional)
+        return (missing, additional)
+
+    def _search(self):
+        baseline = self._baseline_queue()
+        comparison = self._comparison_hash()
+        missing, additional, with_vars = self._hash_lookup(
+            baseline, comparison)
+        missing, additional = self._with_vars_search(
+            with_vars, comparison, missing, additional)
+        additional = sorted(
+            [[k] + v for k, v in comparison.items()] + additional)
         return {'missing': missing, 'additional': additional}
 
     def additional(self):
