@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import re
-import os
 from collections import namedtuple
 
 from diffios import DiffiosConfig
+from diffios import DiffiosReport
 
 DELIMITER = r'{{[^{}]+}}'
 DELIMITER_START = '{{'
@@ -157,36 +157,8 @@ class DiffiosDiff(object):
     def missing(self):
         return sorted(self._search()['missing'])
 
-    @property
-    def pprint_additional(self):
-        """TODO: Docstring for pprint_additional.
+    def _report(self):
+        return DiffiosReport(self.additional(), self.missing())
 
-        Returns: TODO
-
-        """
-        return self._format_changes(self.additional)
-
-    @property
-    def pprint_missing(self):
-        """TODO: Docstring for pprint_missing.
-
-        Returns: TODO
-
-        """
-        return self._format_changes(self.missing)
-
-    def diff(self):
-        """TODO: Docstring for diff.
-
-        Returns: TODO
-
-        """
-        print("\nComparing {comparison} against baseline: {baseline}".format(
-            comparison=os.path.basename(self.comparison.config),
-            baseline=os.path.basename(self.baseline.config)
-        ))
-        print("\n[+] additional [+]\n")
-        print("{}".format(self.pprint_additional()))
-        print("\n[-] missing [-]\n")
-        print("{}".format(self.pprint_missing()))
-        print("\n--- END ---\n")
+    def pprint_diff(self):
+        return self._report().pprint_diff()

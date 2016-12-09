@@ -58,8 +58,10 @@ class DiffiosConfig(object):
             ignore_lines = os.path.join(os.getcwd(), "diffios_ignore")
         elif ignore_lines is None:
             ignore_lines = []
-        self.config = self._check_data(config)
-        self.ignore_lines = self._ignore(self._check_data(ignore_lines))
+        self._config = config
+        self._ignore_lines = ignore_lines
+        self.config = self._check_data(self._config)
+        self.ignore_lines = self._ignore(self._check_data(self._ignore_lines))
 
     def _valid_config(self):
         valid = [l.rstrip() for l in self.config if self._valid_line(l)]
