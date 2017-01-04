@@ -27,9 +27,9 @@ class DiffiosReport(object):
         """
         deltas = ""
         for i, group in enumerate(data, 1):
-            deltas += "\n{}: {}".format(i, group[0])
+            deltas += "\n{:>3}: {}".format(i, group[0])
             if len(group) > 1:
-                deltas += "\n   {}\n".format("\n   ".join(group[1:]))
+                deltas += "\n      {}\n".format("\n      ".join(group[1:]))
         return deltas
 
     def pprint_diff(self):
@@ -40,9 +40,8 @@ class DiffiosReport(object):
         """
         additional = self._pprint_format(self._additional)
         missing = self._pprint_format(self._missing)
-        diff = ("\n*** Additional ***\n"
+        return ("\n--- Additional ---\n"
                 "{0}"
-                "\n*** Missing ***\n"
+                "\n\n--- Missing ---\n"
                 "{1}"
-                "\n*** END ***\n").format(additional, missing)
-        return diff
+                "\n\n--- END ---\n").format(additional, missing)

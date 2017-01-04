@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import progressbar
+#  from progressbar import ProgressBar
 
 from diffios import DiffiosDiff
 
@@ -26,11 +26,13 @@ class DiffiosDir(object):
         self._ignore_lines = ignore_lines
         self._files = sorted(os.listdir(self._comparison_dir))
 
-    def diff(self):
-        for fin in progressbar.ProgressBar(self._files):
+    def diffs(self):
+        diffs = []
+        for fin in self._files:
             comparison = os.path.join(self._comparison_dir, fin)
             delta = DiffiosDiff(
                 self._baseline,
                 comparison,
                 self._ignore_lines)
-            yield delta
+            diffs.append(delta)
+        return diffs
