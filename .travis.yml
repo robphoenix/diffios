@@ -9,9 +9,8 @@ python:
 
 matrix:
   allow_failures:
-    - "3.2"
-    - "3.3"
-    - "nightly"
+    - python: "3.2"
+    - python: "3.3"
 
 branches:
   only:

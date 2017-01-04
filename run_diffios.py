@@ -14,3 +14,4 @@ BASELINE_FILE = os.path.join(
 diffs = DiffiosDir(BASELINE_FILE, COMPARISON_DIR, IGNORE_FILE)
 for diff in diffs.diffs():
     print(diff.pprint_diff())
+
