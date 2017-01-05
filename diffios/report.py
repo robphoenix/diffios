@@ -27,7 +27,7 @@ class DiffiosReport(object):
         """
         deltas = ""
         for i, group in enumerate(data, 1):
-            deltas += "\n{:>3}: {}".format(i, group[0])
+            deltas += "\n{:>3}: {}\n".format(i, group[0])
             if len(group) > 1:
                 deltas += "\n      {}\n".format("\n      ".join(group[1:]))
         return deltas
