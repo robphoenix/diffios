@@ -1,2 +1,2 @@
 from diffios.config import DiffiosConfig
-from diffios.diff import DiffiosDiff
+from diffios.diffios import Diffios

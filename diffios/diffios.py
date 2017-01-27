@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import os
 from collections import namedtuple
 
 from diffios import DiffiosConfig
@@ -12,19 +11,11 @@ DELIMITER_START = '{{'
 DELIMITER_END = '}}'
 
 
-class DiffiosDiff(object):
+class Diffios(object):
 
     """Docstring for DiffiosDiff. """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
-        """TODO: Docstring for __init__.
-
-        Kwargs:
-            baseline (TODO): TODO
-            comparison (TODO): TODO
-            ignore_file (TODO): TODO
-
-        """
         self._baseline = baseline
         self._comparison = comparison
         self._ignore_lines = ignore_lines
@@ -157,36 +148,51 @@ class DiffiosDiff(object):
     def missing(self):
         return sorted(self._search()['missing'])
 
-    @property
-    def pprint_additional(self):
-        """TODO: Docstring for pprint_additional.
-
+    @staticmethod
+    def _pprint_format(data, prefix):
+        """TODO: Docstring for _pprint_format.
+        Args:
+            data (TODO): TODO
         Returns: TODO
-
         """
-        return self._format_changes(self.additional)
+        deltas = ""
+        for i, group in enumerate(data, 1):
+            deltas += "\n{} {:>3}: {}".format(prefix, i, group[0])
+            if len(group) > 1:
+                deltas += "\n{}       {}".format(prefix, "\n      ".join(group[1:]))
+        return deltas
 
-    @property
-    def pprint_missing(self):
-        """TODO: Docstring for pprint_missing.
-
-        Returns: TODO
-
-        """
-        return self._format_changes(self.missing)
-
-    def diff(self):
+    def compare(self):
         """TODO: Docstring for diff.
 
         Returns: TODO
 
         """
-        print("\nComparing {comparison} against baseline: {baseline}".format(
-            comparison=os.path.basename(self.comparison.config),
-            baseline=os.path.basename(self.baseline.config)
-        ))
-        print("\n[+] additional [+]\n")
-        print("{}".format(self.pprint_additional()))
-        print("\n[-] missing [-]\n")
-        print("{}".format(self.pprint_missing()))
-        print("\n--- END ---\n")
+        missing = self._pprint_format(self.missing(), '-')
+        additional = self._pprint_format(self.additional(), '+')
+        return ("--- baseline\n"
+                "+++ comparison"
+                "\n{0}"
+                "\n{1}"
+                "\n").format(missing, additional)
+
+    @staticmethod
+    def _format_changes(data):
+        """TODO: Docstring for _format_changes.
+        Args:
+            data (TODO): TODO
+        Returns: TODO
+        """
+        return "\n\n".join("\n".join(lines) for lines in data)
+
+    def pprint_additional(self):
+        """TODO: Docstring for pprint_additional.
+        Returns: TODO
+        """
+        return self._format_changes(self.additional())
+
+    def pprint_missing(self):
+        """TODO: Docstring for pprint_missing.
+        Returns: TODO
+        """
+        return self._format_changes(self.missing())
