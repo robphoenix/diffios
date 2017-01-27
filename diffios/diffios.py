@@ -4,7 +4,7 @@
 import re
 from collections import namedtuple
 
-from diffios import DiffiosConfig
+from diffios.config import DiffiosConfig
 
 DELIMITER = r'{{[^{}]+}}'
 DELIMITER_START = '{{'
