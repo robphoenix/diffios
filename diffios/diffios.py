@@ -170,6 +170,29 @@ class Diffios(object):
         """
         missing = self._pprint_format(self.missing(), '-')
         additional = self._pprint_format(self.additional(), '+')
-        return ("\n{0}"
+        return ("--- baseline\n"
+                "+++ comparison"
+                "\n{0}"
                 "\n{1}"
-                "\n\n--- END ---\n").format(missing, additional)
+                "\n").format(missing, additional)
+
+    @staticmethod
+    def _format_changes(data):
+        """TODO: Docstring for _format_changes.
+        Args:
+            data (TODO): TODO
+        Returns: TODO
+        """
+        return "\n\n".join("\n".join(lines) for lines in data)
+
+    def pprint_additional(self):
+        """TODO: Docstring for pprint_additional.
+        Returns: TODO
+        """
+        return self._format_changes(self.additional())
+
+    def pprint_missing(self):
+        """TODO: Docstring for pprint_missing.
+        Returns: TODO
+        """
+        return self._format_changes(self.missing())
