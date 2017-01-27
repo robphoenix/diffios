@@ -11,7 +11,7 @@ import pytest
 
 sys.path.insert(0, os.path.abspath('..'))
 
-from diffios import DiffiosConfig
+from diffios.config import DiffiosConfig
 
 DEFAULT_IGNORES_FILENAME = 'diffios_ignore'
 
