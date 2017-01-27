@@ -4,7 +4,7 @@
 import os
 #  from progressbar import ProgressBar
 
-from diffios import DiffiosDiff
+from diffios import Diffios
 
 
 class DiffiosDir(object):
@@ -30,7 +30,7 @@ class DiffiosDir(object):
         diffs = []
         for fin in self._files:
             comparison = os.path.join(self._comparison_dir, fin)
-            delta = DiffiosDiff(
+            delta = Diffios(
                 self._baseline,
                 comparison,
                 self._ignore_lines)

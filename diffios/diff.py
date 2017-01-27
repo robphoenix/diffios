@@ -5,26 +5,17 @@ import re
 from collections import namedtuple
 
 from diffios import DiffiosConfig
-from diffios import DiffiosReport
 
 DELIMITER = r'{{[^{}]+}}'
 DELIMITER_START = '{{'
 DELIMITER_END = '}}'
 
 
-class DiffiosDiff(object):
+class Diffios(object):
 
     """Docstring for DiffiosDiff. """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
-        """TODO: Docstring for __init__.
-
-        Kwargs:
-            baseline (TODO): TODO
-            comparison (TODO): TODO
-            ignore_file (TODO): TODO
-
-        """
         self._baseline = baseline
         self._comparison = comparison
         self._ignore_lines = ignore_lines
@@ -157,8 +148,28 @@ class DiffiosDiff(object):
     def missing(self):
         return sorted(self._search()['missing'])
 
-    def _report(self):
-        return DiffiosReport(self.additional(), self.missing())
+    @staticmethod
+    def _pprint_format(data, prefix):
+        """TODO: Docstring for _pprint_format.
+        Args:
+            data (TODO): TODO
+        Returns: TODO
+        """
+        deltas = ""
+        for i, group in enumerate(data, 1):
+            deltas += "\n{} {:>3}: {}".format(prefix, i, group[0])
+            if len(group) > 1:
+                deltas += "\n{}       {}".format(prefix, "\n      ".join(group[1:]))
+        return deltas
 
-    def pprint_diff(self):
-        return self._report().pprint_diff()
+    def compare(self):
+        """TODO: Docstring for diff.
+
+        Returns: TODO
+
+        """
+        missing = self._pprint_format(self.missing(), '-')
+        additional = self._pprint_format(self.additional(), '+')
+        return ("\n{0}"
+                "\n{1}"
+                "\n\n--- END ---\n").format(missing, additional)
