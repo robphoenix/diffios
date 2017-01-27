@@ -4,7 +4,7 @@ import sys
 sys.path.append(os.path.abspath("."))
 sys.path.insert(0, os.path.abspath('..'))
 
-from diffios.diff import Diffios
+from diffios.diffios import Diffios
 
 
 def test_basic_comparison_without_variables():
