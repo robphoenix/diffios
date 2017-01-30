@@ -4,7 +4,7 @@ import sys
 sys.path.append(os.path.abspath("."))
 sys.path.insert(0, os.path.abspath('..'))
 
-from diffios.compare import DiffiosCompare
+from .context import diffios
 
 
 def test_basic_comparison_without_variables():
@@ -32,7 +32,7 @@ def test_basic_comparison_without_variables():
         ['interface Vlan1',
          ' ip address 10.10.10.10']
     ])
-    diff = DiffiosCompare(baseline, comparison)
+    diff = diffios.DiffiosCompare(baseline, comparison)
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
@@ -62,7 +62,7 @@ def test_basic_comparison_with_variables():
         ['interface Vlan1',
          ' ip address {{ ip address }}']
     ])
-    diff = DiffiosCompare(baseline, comparison)
+    diff = diffios.DiffiosCompare(baseline, comparison)
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
@@ -90,7 +90,7 @@ def test_different_vlan_interface_config(ignores_file):
         ' no ip address',
         ' shutdown'
     ]]
-    diff = DiffiosCompare(baseline=baseline, comparison=comparison, ignore_lines=ignores_file.split('\n'))
+    diff = diffios.DiffiosCompare(baseline=baseline, comparison=comparison, ignore_lines=ignores_file.split('\n'))
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
@@ -106,7 +106,7 @@ def test_different_fast_interface_config_ignoring_description(int_baseline, int_
         'interface FastEthernet0/5',
         ' switchport mode access'
     ]]
-    diff = DiffiosCompare(baseline=int_baseline, comparison=int_comparison, ignore_lines=[])
+    diff = diffios.DiffiosCompare(baseline=int_baseline, comparison=int_comparison, ignore_lines=[])
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
@@ -134,7 +134,7 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
         ['aaa authorization exec CON group radius local'],
         ['aaa authorization exec VTY group radius local'],
         ['aaa server radius dynamic-author', ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
-    diff = DiffiosCompare(baseline=aaa_baseline, comparison=aaa_comparison)
+    diff = diffios.DiffiosCompare(baseline=aaa_baseline, comparison=aaa_comparison)
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
@@ -142,7 +142,7 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
 def test_multiple_vars_ip_route():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -150,7 +150,7 @@ def test_multiple_vars_ip_route():
 def test_multiple_vars_ip_route_without_splaces():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{LAN_NET}} 255.255.0.0 {{VLAN_99_IP}} tag 100']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -158,7 +158,7 @@ def test_multiple_vars_ip_route_without_splaces():
 def test_multiple_vars_ip_route_duplicated_ip():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.10 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -166,7 +166,7 @@ def test_multiple_vars_ip_route_duplicated_ip():
 def test_multiple_vars_ip_route_similar_ip():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.100 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -174,7 +174,7 @@ def test_multiple_vars_ip_route_similar_ip():
 def test_triple_vars_ip_route():
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100 and this']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100 and {{ this }}']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -184,7 +184,7 @@ def test_multiple_vars_with_regex_metacharacters():
                 'description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***']
     config = ['description *** ADSL 12345 67890 ***',
               'description *** FTTC on PSTN:12345 CCT:67890 ***']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -192,7 +192,7 @@ def test_multiple_vars_with_regex_metacharacters():
 def test_single_multiple_word_vars():
     baseline = ['interface FastEthernet0/5', ' description {{ DESCRIPTION }}']
     config = ['interface FastEthernet0/5', ' description Data and Voice Access Port']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -200,7 +200,7 @@ def test_single_multiple_word_vars():
 def test_multiple_multiple_word_vars():
     baseline = ['interface FastEthernet0/5', ' description {{ VLAN }} connection to {{ BACKUP }}']
     config = ['interface FastEthernet0/5', ' description Vlan 99 connection to Core Backup']
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -228,7 +228,7 @@ def test_multiple_bgp_config_lines_with_same_first_word():
         ' neighbour 10.200.10.10 send-community',
         ' neighbour 10.200.10.10 soft-reconfiguration inbound'
     ]
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -244,7 +244,7 @@ def test_prefix_lists_with_seq_value_in_ip_address():
         'ip prefix-list bgp-routes-out seq 10 permit 10.25.0.12/32',
         'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
     ]
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()
 
@@ -258,6 +258,6 @@ def test_dialer_interface():
         'interface Dialer1',
         ' description *** FTTC on PSTN:020 8777 1953  CCT:IEUK644252 ***'
     ]
-    diff = DiffiosCompare(baseline, config, [])
+    diff = diffios.DiffiosCompare(baseline, config, [])
     assert [] == diff.additional()
     assert [] == diff.missing()

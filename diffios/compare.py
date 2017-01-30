@@ -8,7 +8,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from diffios.config import DiffiosConfig
+from diffios import DiffiosConfig
 
 DELIMITER = r'{{[^{}]+}}'
 DELIMITER_START = '{{'
