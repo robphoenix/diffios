@@ -8,7 +8,7 @@ try:
 except ImportError:
     from Queue import Queue
 
-from diffios import DiffiosConfig
+import diffios
 
 DELIMITER = r'{{[^{}]+}}'
 DELIMITER_START = '{{'
@@ -23,8 +23,8 @@ class DiffiosCompare(object):
         self._baseline = baseline
         self._comparison = comparison
         self._ignore_lines = ignore_lines
-        self.baseline = DiffiosConfig(self._baseline, self._ignore_lines)
-        self.comparison = DiffiosConfig(self._comparison, self._ignore_lines)
+        self.baseline = diffios.DiffiosConfig(self._baseline, self._ignore_lines)
+        self.comparison = diffios.DiffiosConfig(self._comparison, self._ignore_lines)
 
     @staticmethod
     def _compare_lines(target, guess):
