@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import re
-from queue import Queue
 from collections import namedtuple
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 from diffios.config import DiffiosConfig
 
