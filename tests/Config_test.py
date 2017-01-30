@@ -90,22 +90,6 @@ def test_config(baseline, baseline_config):
     assert config == diffios.Config(config).config
 
 
-def test_hostname_when_present():
-    """
-    Should return device hostname if present in the given config.
-    """
-    config = ['!', 'hostname ROUTER', 'ip default-gateway 192.168.0.1']
-    assert "ROUTER" == diffios.Config(config).hostname
-
-
-def test_hostname_is_None_when_not_present():
-    """
-    Should return None if no hostname found in given config.
-    """
-    config = ['!', 'ip default-gateway 192.168.0.1']
-    assert diffios.Config(config).hostname is None
-
-
 def test_config_is_grouped_correctly_with_list():
     """
     Should return valid config as list of hierarchical blocks,

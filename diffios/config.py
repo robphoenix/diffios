@@ -39,8 +39,6 @@ class Config(object):
     ... 'hostname',
     ... '^ description']
     >>> conf = Config(config, ignore)
-    >>> conf.hostname
-    'ROUTER'
     >>> conf.config
     ['!', 'hostname ROUTER', '!', 'interface FastEthernet0/1', ' description \
 *** Link to Core ***', ' ip address 192.168.0.1 255.255.255.0']
@@ -135,20 +133,6 @@ class Config(object):
 
     def ignored(self):
         return self._partition_config().ignored
-
-    @property
-    def hostname(self):
-        """The hostname of the given config.
-
-        Returns:
-            str: hostname of the given config
-                or None if not found.
-
-        """
-        for line in self.config:
-            if "hostname" in line.lower():
-                return line.split()[1]
-        return None
 
     def _ignore(self, ignore):
         """Transforms given ignores data into usable format.
