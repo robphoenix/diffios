@@ -11,7 +11,7 @@ DELIMITER_START = '{{'
 DELIMITER_END = '}}'
 
 
-class Diffios(object):
+class DiffiosCompare(object):
 
     """Docstring for DiffiosDiff. """
 
@@ -162,7 +162,7 @@ class Diffios(object):
                 deltas += "\n{}       {}".format(prefix, "\n      ".join(group[1:]))
         return deltas
 
-    def compare(self):
+    def delta(self):
         """TODO: Docstring for diff.
 
         Returns: TODO

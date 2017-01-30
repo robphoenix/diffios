@@ -64,8 +64,7 @@ class DiffiosConfig(object):
         self.ignore_lines = self._ignore(self._check_data(self._ignore_lines))
 
     def _valid_config(self):
-        valid = [l.rstrip() for l in self.config if self._valid_line(l)]
-        return valid
+        return [l.rstrip() for l in self.config if self._valid_line(l)]
 
     def _group_config(self):
         """Group config into hierarchical groups.
