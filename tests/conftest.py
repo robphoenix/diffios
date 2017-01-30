@@ -1,24 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-import sys
 import pytest
-
-
-sys.path.insert(0, os.path.abspath('../diffios'))
-
-from diffios import DiffiosConfig
 
 
 @pytest.fixture
 def config():
     configs_dir = os.path.abspath(os.path.join("tests", "configs"))
     return os.path.join(configs_dir, "baseline.conf")
-
-
-@pytest.fixture
-def dc():
-    return DiffiosConfig(config(), ignores=ignores_file())
 
 
 @pytest.fixture

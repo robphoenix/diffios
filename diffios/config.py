@@ -54,8 +54,8 @@ class DiffiosConfig(object):
     """
 
     def __init__(self, config, ignore_lines=None):
-        if ignore_lines is None and os.path.exists(os.path.join(os.getcwd(), 'diffios_ignore')):
-            ignore_lines = os.path.join(os.getcwd(), "diffios_ignore")
+        if ignore_lines is None and os.path.exists(os.path.join(os.getcwd(), 'ignores.txt')):
+            ignore_lines = os.path.join(os.getcwd(), "ignores.txt")
         elif ignore_lines is None:
             ignore_lines = []
         self._config = config

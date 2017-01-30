@@ -59,7 +59,7 @@ def test_uses_default_ignores_file_if_it_exists(ignores_file):
         mock_path.exists.return_value = True
         with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
             DiffiosConfig(config).ignore_lines
-            mock_open.assert_called_once_with(os.path.join('..', 'diffios_ignore'))
+            mock_open.assert_called_once_with(os.path.join('..', 'ignores.txt'))
 
 
 def test_ignores_is_empty_list_if_no_default_ignore_file():
