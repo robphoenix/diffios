@@ -5,11 +5,11 @@ import re
 from collections import namedtuple
 
 
-class DiffiosConfig(object):
+class Config(object):
 
-    """DiffiosConfig prepares a Cisco IOS Config to diff.
+    """Config prepares a Cisco IOS Config to diff.
 
-    DiffiosConfig takes a Cisco IOS config, as a file or a
+    Config takes a Cisco IOS config, as a file or a
     list, extracts the device hostname, removes any invalid
     lines, such as comments, breaks the config into a
     hierarchical block structure and partitions the config
@@ -38,7 +38,7 @@ class DiffiosConfig(object):
     >>> ignore = [
     ... 'hostname',
     ... '^ description']
-    >>> conf = DiffiosConfig(config, ignore)
+    >>> conf = Config(config, ignore)
     >>> conf.hostname
     'ROUTER'
     >>> conf.config
@@ -178,8 +178,8 @@ class DiffiosConfig(object):
                 is not a list or file.
 
         """
-        invalid_arg = "DiffiosConfig() received an invalid argument: config={}\n"
-        unable_to_open = "DiffiosConfig() could not open '{}'"
+        invalid_arg = "diffios.Config() received an invalid argument: config={}\n"
+        unable_to_open = "diffios.Config() could not open '{}'"
         if isinstance(data, list):
             return data
         elif os.path.isfile(data):

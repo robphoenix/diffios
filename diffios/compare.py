@@ -15,16 +15,16 @@ DELIMITER_START = '{{'
 DELIMITER_END = '}}'
 
 
-class DiffiosCompare(object):
+class Compare(object):
 
-    """Docstring for DiffiosDiff. """
+    """Docstring for Diff. """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
         self._baseline = baseline
         self._comparison = comparison
         self._ignore_lines = ignore_lines
-        self.baseline = diffios.DiffiosConfig(self._baseline, self._ignore_lines)
-        self.comparison = diffios.DiffiosConfig(self._comparison, self._ignore_lines)
+        self.baseline = diffios.Config(self._baseline, self._ignore_lines)
+        self.comparison = diffios.Config(self._comparison, self._ignore_lines)
 
     @staticmethod
     def _compare_lines(target, guess):
