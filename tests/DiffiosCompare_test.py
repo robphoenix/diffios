@@ -67,7 +67,7 @@ def test_basic_comparison_with_variables():
     assert expected_missing == diff.missing()
 
 
-def test_different_vlan_interface_config(ignores):
+def test_different_vlan_interface_config(ignores_file):
     baseline = [
         'hostname {{ hostname }}',
         'interface Vlan1',
@@ -90,7 +90,7 @@ def test_different_vlan_interface_config(ignores):
         ' no ip address',
         ' shutdown'
     ]]
-    diff = DiffiosCompare(baseline=baseline, comparison=comparison, ignore_lines=ignores)
+    diff = DiffiosCompare(baseline=baseline, comparison=comparison, ignore_lines=ignores_file.split('\n'))
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 

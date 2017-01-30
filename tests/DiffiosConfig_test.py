@@ -13,8 +13,6 @@ sys.path.insert(0, os.path.abspath('..'))
 
 from diffios.config import DiffiosConfig
 
-DEFAULT_IGNORES_FILENAME = 'diffios_ignore'
-
 
 def test_raises_error_if_config_not_given():
     """
