@@ -134,7 +134,8 @@ class Config(object):
     def ignored(self):
         return self._partition_config().ignored
 
-    def _ignore(self, ignore):
+    @staticmethod
+    def _ignore(ignore):
         """Transforms given ignores data into usable format.
 
         Args:

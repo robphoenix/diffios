@@ -47,7 +47,8 @@ class Compare(object):
     def _comparison_hash(self):
         return {group[0]: group[1:] for group in self.comparison.included()}
 
-    def _child_lookup(self, baseline_parent, baseline_children, comparison_children):
+    @staticmethod
+    def _child_lookup(baseline_parent, baseline_children, comparison_children):
         ChildComparison = namedtuple('ChildComparison', 'additional missing')
         missing = []
         for baseline_child in baseline_children:
