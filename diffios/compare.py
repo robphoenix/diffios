@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from queue import Queue
 from collections import namedtuple
 
 from diffios.config import DiffiosConfig
@@ -36,7 +37,9 @@ class DiffiosCompare(object):
             return False
 
     def _baseline_queue(self):
-        return self.baseline.included()
+        bq = Queue()
+        [bq.put(el) for el in self.baseline.included()]
+        return bq
 
     def _comparison_hash(self):
         return {group[0]: group[1:] for group in self.comparison.included()}
@@ -91,8 +94,8 @@ class DiffiosCompare(object):
 
     def _hash_lookup(self, baseline, comparison):
         missing, additional, with_vars = [], [], []
-        while baseline:
-            baseline_group = baseline.pop()
+        while not baseline.empty():
+            baseline_group = baseline.get()
             baseline_parent = baseline_group[0]
             baseline_children = baseline_group[1:]
             baseline_family = ' '.join(baseline_group)
