@@ -1,0 +1,50 @@
+Comparison,Baseline,Additional,Missing
+comparison_01.txt,baseline.txt,,
+comparison_02.txt,baseline.txt,"aaa accounting commands 0 CON start-stop group tacacs+
+
+aaa accounting commands 0 VTY start-stop group tacacs+
+
+aaa accounting commands 15 CON start-stop group tacacs+
+
+aaa accounting commands 15 VTY start-stop group tacacs+
+
+aaa accounting exec CON start-stop group tacacs+
+
+aaa accounting exec VTY start-stop group tacacs+
+
+aaa authentication login CON group tacacs+ local
+
+aaa authentication login VTY group tacacs+ local
+
+aaa authentication login default group tacacs+ local
+
+aaa authorization exec CON group tacacs+ local
+
+aaa authorization exec VTY group tacacs+ local
+
+aaa authorization exec default group tacacs+ local
+
+aaa server radius dynamic-author
+ client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL
+
+interface FastEthernet0/5
+ switchport access vlan 100","aaa accounting exec CON start-stop group radius
+
+aaa accounting exec VTY start-stop group radius
+
+aaa authentication login CON group radius local
+
+aaa authentication login VTY group radius local
+
+aaa authorization exec CON group radius local
+
+aaa authorization exec VTY group radius local
+
+aaa group server radius ISE
+ server name bob
+
+aaa server radius dynamic-author
+ client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL
+
+interface FastEthernet0/5
+ switchport access vlan 101"
