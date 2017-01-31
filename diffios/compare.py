@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+File: compare.py
+Author: Rob Phoenix
+Email: rob@robphoenix.com
+Github: https://github.com/robphoenix
+Description: Compare and diff Cisco IOS configs
 
+Attributes:
+    DELIMITER (str): A regular expression that defines a config variable
+    DELIMITER_START (str): The opening variable delimiter
+    DELIMITER_END (str): The closing variable delimiter
+
+"""
 import re
 from collections import namedtuple
 try:
@@ -29,7 +41,8 @@ class Compare(object):
     baseline configs, detailing what is missing from the
     comparison config that is in the baseline config and what
     is additional to the comparison config that is not in the
-    baseline config.
+    baseline config. These diffs will respect the hierarchical
+    nature or Cisco IOS configs.
     Compare also provides convenience methods for displaying
     this data or saving it to file.
 
@@ -39,20 +52,6 @@ class Compare(object):
         comparison(diffios.Config): A diffios.Config object,
             initialised with the comparison config
         ignore_lines(list): List of lines to ignore
-
-    Args:
-        baseline (str|list|diffios.Config): Path to baseline
-            config file, list containing lines of config,
-            or diffios.Config object
-        comparison (str|list|diffios.Config): Path to comparison
-            config file, list containing lines of config,
-            or diffios.Config object
-
-    Kwargs:
-        ignore_lines (str|list): Path to ignores file, or list
-            containing lines to ignore. Defaults to ignores
-            file in current working directory if it exists.
-
 
     >>> baseline = [
     ... 'hostname {{ hostname }}',
@@ -100,6 +99,23 @@ class Compare(object):
     """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
+        """Initialize a diffios.Compare object with a baseline,
+            a comparison and lines to ignore.
+
+        Args:
+            baseline (str|list|diffios.Config): Path to baseline
+                config file, list containing lines of config,
+                or diffios.Config object
+            comparison (str|list|diffios.Config): Path to comparison
+                config file, list containing lines of config,
+                or diffios.Config object
+
+        Kwargs:
+            ignore_lines (str|list): Path to ignores file, or list
+                containing lines to ignore. Defaults to ignores
+                file in current working directory if it exists.
+
+        """
         self._baseline = baseline
         self._comparison = comparison
         self._ignore_lines = ignore_lines
@@ -239,18 +255,49 @@ class Compare(object):
         return {'missing': missing, 'additional': additional}
 
     def additional(self):
+        """Lines in the comparison config not present in baseline config.
+
+        Due to the hierarchical nature of Cisco configs,
+        lines can be grouped with a parent and it's children.
+        Therefore when child lines are additional their parent line
+        will also be included here, whether they themselves are
+        additional or not, so as to give context for the child line,
+        specifying which grouping they belong to.
+
+        Example Group:
+            interface FastEthernet0/1               # Parent
+             ip address 192.168.0.1 255.255.255.0   # Child
+             no shutdown                            # Child
+
+        Returns:
+            list: Sorted lines additional to the comparison config.
+
+        """
         return sorted(self._search()['additional'])
 
     def missing(self):
+        """Lines in the baseline config not present in comparison config.
+
+        Due to the hierarchical nature of Cisco configs,
+        lines can be grouped with a parent and it's children.
+        Therefore when child lines are missing their parent line
+        will also be included here, whether they themselves are
+        missing or not, so as to give context for the child line,
+        specifying which grouping they belong to.
+
+        Example Group:
+            interface FastEthernet0/1               # Parent
+             ip address 192.168.0.1 255.255.255.0   # Child
+             no shutdown                            # Child
+
+        Returns:
+            list: Sorted lines missing from the comparison config.
+
+        """
         return sorted(self._search()['missing'])
 
     @staticmethod
     def _pprint_format(data, prefix):
-        """TODO: Docstring for _pprint_format.
-        Args:
-            data (TODO): TODO
-        Returns: TODO
-        """
         deltas = ""
         for i, group in enumerate(data, 1):
             deltas += "\n{} {:>3}: {}".format(prefix, i, group[0])
@@ -259,9 +306,27 @@ class Compare(object):
         return deltas
 
     def delta(self):
-        """TODO: Docstring for diff.
+        """A human readable diff of the comparison against the baseline.
 
-        Returns: TODO
+        A human readable string of the diff. Missing lines are
+        prefixed with a '-', additional lines are prefixed with
+        a '+'. Each hierarchical grouping is numbered.
+
+        Example:
+            --- baseline
+            +++ comparison
+
+            -   1: interface FastEthernet 0/1
+            -        switchport mode access
+            -   2: ip domain-name {{ domain }}
+
+            +   1: interface FastEthernet 0/1
+            +        switchport mode trunk
+            +   2: interface FastEthernet 0/2
+            +        ip address 192.168.0.2
+
+        Returns:
+            string: Detail of the diff of comparison against baseline.
 
         """
         missing = self._pprint_format(self.missing(), '-')
@@ -274,21 +339,39 @@ class Compare(object):
 
     @staticmethod
     def _format_changes(data):
-        """TODO: Docstring for _format_changes.
-        Args:
-            data (TODO): TODO
-        Returns: TODO
-        """
         return "\n\n".join("\n".join(lines) for lines in data)
 
     def pprint_additional(self):
-        """TODO: Docstring for pprint_additional.
-        Returns: TODO
+        """A pretty print format of additional lines
+
+        An output usable for writing to file.
+
+        Example:
+            interface FastEthernet 0/1
+             switchport mode trunk
+
+            interface FastEthernet 0/2
+             ip address 192.168.0.2
+
+        Returns:
+            string: Pretty print formatted output
+
         """
         return self._format_changes(self.additional())
 
     def pprint_missing(self):
-        """TODO: Docstring for pprint_missing.
-        Returns: TODO
+        """A pretty print format of missing lines
+
+        An output usable for writing to file.
+
+        Example:
+            interface FastEthernet 0/1
+             switchport mode access
+
+            ip domain-name {{ domain }}
+
+        Returns:
+            string: Pretty print formatted output
+
         """
         return self._format_changes(self.missing())

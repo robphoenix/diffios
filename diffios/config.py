@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+File: config.py
+Author: Rob Phoenix
+Email: rob@robphoenix.com
+Github: https://github.com/robphoenix
+Description: Prepare Cisco IOS configs for comparison
+
+"""
 import os
 import re
 from collections import namedtuple
@@ -63,29 +71,6 @@ class Config(object):
         return [l.rstrip() for l in self.config if self._valid_line(l)]
 
     def _group_config(self):
-        """Group config into hierarchical groups.
-
-        Groups are defined as a parent/child relationship,
-        where children lines start with a ' ', and parents
-        are the immediately preceding line that doesn't start
-        with a ' '. Blocks can be single lines where there
-        is no children. Returns the groups sorted.
-
-        Example Groups:
-            interface FastEthernet0/1
-             ip address 192.168.0.1 255.255.255.0
-             no shutdown
-
-            hostname ROUTER
-
-        Args:
-            config (list): config as a list of lines.
-
-        Returns:
-            list: config as a sorted list of lists, each list
-                representing a hierarchical block of config.
-
-        """
         current_group, groups = [], []
         for line in self._valid_config():
             if not line.startswith(' ') and current_group:
@@ -98,12 +83,6 @@ class Config(object):
         return sorted(groups)
 
     def _partition_group(self, group):
-        """Check for any lines to be ignored in a given group.
-        Args:
-            group (list): A single hierarchical group of config
-        Returns:
-            tuple: ignored and recorded (not ignored) lines in group
-        """
         Partition = namedtuple("Partition", "ignored included")
         ignored, included = [], []
         for i, line in enumerate(group):
@@ -127,40 +106,20 @@ class Config(object):
         return Partition(ignored, included)
 
     def included(self):
+        """Lines from the original config that are not ignored. """
         return self._partition_config().included
 
     def ignored(self):
+        """Lines from the original config that are ignored. """
         return self._partition_config().ignored
 
     @staticmethod
     def _ignore(ignore):
-        """Transforms given ignores data into usable format.
-
-        Args:
-            ignores (list|file): ignores as either list or file.
-
-        Returns:
-            list: Lines to ignore.
-
-        """
         ignore = [line.strip().lower() for line in ignore]
         return ignore
 
     @staticmethod
     def _check_data(data):
-        """Check type of data and convert it if necessary.
-
-        Args:
-            data (list|file): input data as either list or file.
-
-        Returns:
-            list: The input data as a list.
-
-        Raises:
-            RuntimeError: If file cannot be opened or given data
-                is not a list or file.
-
-        """
         invalid_arg = "diffios.Config() received an invalid argument: config={}\n"
         unable_to_open = "diffios.Config() could not open '{}'"
         if isinstance(data, list):
@@ -177,32 +136,10 @@ class Config(object):
 
     @staticmethod
     def _valid_line(line):
-        """Assert whether a given line is valid.
-
-        Lines considered invalid are those which are empty
-        or begin with a '!' to indicate a comment.
-
-        Args:
-            line (str): A single line from a config.
-
-        Returns:
-            bool: True if line is valid, False if not.
-
-        """
         line = line.strip()
         return len(line) > 0 and not line.startswith("!") and line != '^' and line != '^C'
 
     def _ignore_line(self, line):
-        """Check if a line should be ignored.
-
-        Args:
-            line (str): line to check
-
-        Returns:
-            bool: True if line should be ignored,
-                False otherwise.
-
-        """
         for line_to_ignore in self.ignore_lines:
             if re.search(line_to_ignore, line.lower()):
                 return True
