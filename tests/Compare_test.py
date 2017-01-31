@@ -8,6 +8,7 @@ from .context import diffios
 
 
 def test_basic_comparison_without_variables():
+    """ Compare two configs without variables """
     baseline = [
         'interface FastEthernet0/1',
         ' description link to core',
@@ -38,6 +39,7 @@ def test_basic_comparison_without_variables():
 
 
 def test_basic_comparison_with_variables():
+    """ Compare two configs with variables """
     baseline = [
         'interface FastEthernet0/1',
         ' description {{ description }}',
@@ -68,6 +70,7 @@ def test_basic_comparison_with_variables():
 
 
 def test_different_vlan_interface_config(ignores_file):
+    """ Compare two vlan configs with variables and ignores file """
     baseline = [
         'hostname {{ hostname }}',
         'interface Vlan1',
@@ -96,6 +99,7 @@ def test_different_vlan_interface_config(ignores_file):
 
 
 def test_different_fast_interface_config_ignoring_description(int_baseline, int_comparison):
+    """ Variable is not a difference """
     expected_additional = [[
         'interface FastEthernet0/5',
         ' switchport mode trunk',
@@ -112,6 +116,7 @@ def test_different_fast_interface_config_ignoring_description(int_baseline, int_
 
 
 def test_different_aaa_config(aaa_baseline, aaa_comparison):
+    """ Different aaa configs """
     expected_additional = [
         ['aaa accounting commands 0 CON start-stop group tacacs+'],
         ['aaa accounting commands 0 VTY start-stop group tacacs+'],
@@ -125,7 +130,8 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
         ['aaa authorization exec CON group tacacs+ local'],
         ['aaa authorization exec VTY group tacacs+ local'],
         ['aaa authorization exec default group tacacs+ local'],
-        ['aaa server radius dynamic-author', ' client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        ['aaa server radius dynamic-author',
+         ' client 10.10.20.1 server-key 7 1234567890ABCDEFGHIJKL']]
     expected_missing = [
         ['aaa accounting exec CON start-stop group radius'],
         ['aaa accounting exec VTY start-stop group radius'],
@@ -133,13 +139,15 @@ def test_different_aaa_config(aaa_baseline, aaa_comparison):
         ['aaa authentication login VTY group radius local'],
         ['aaa authorization exec CON group radius local'],
         ['aaa authorization exec VTY group radius local'],
-        ['aaa server radius dynamic-author', ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
+        ['aaa server radius dynamic-author',
+         ' client 10.10.21.1 server-key 7 1234567890ABCDEFGHIJKL']]
     diff = diffios.Compare(baseline=aaa_baseline, comparison=aaa_comparison)
     assert expected_additional == diff.additional()
     assert expected_missing == diff.missing()
 
 
-def test_multiple_vars_ip_route():
+def test_multiple_variables_ip_route():
+    """ Multiple variables in single line with spaces in variable"""
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = diffios.Compare(baseline, config, [])
@@ -147,7 +155,8 @@ def test_multiple_vars_ip_route():
     assert [] == diff.missing()
 
 
-def test_multiple_vars_ip_route_without_splaces():
+def test_multiple_variables_ip_route_without_spaces():
+    """ Multiple variables in single line without spaces in variable"""
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100']
     baseline = ['ip route {{LAN_NET}} 255.255.0.0 {{VLAN_99_IP}} tag 100']
     diff = diffios.Compare(baseline, config, [])
@@ -155,7 +164,8 @@ def test_multiple_vars_ip_route_without_splaces():
     assert [] == diff.missing()
 
 
-def test_multiple_vars_ip_route_duplicated_ip():
+def test_multiple_variables_ip_route_duplicated_ip():
+    """ Multiple variables in single line with repeated IP address """
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.10 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = diffios.Compare(baseline, config, [])
@@ -163,7 +173,8 @@ def test_multiple_vars_ip_route_duplicated_ip():
     assert [] == diff.missing()
 
 
-def test_multiple_vars_ip_route_similar_ip():
+def test_multiple_variables_ip_route_similar_ip():
+    """ Multiple variables in single line with similar IP addresses """
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.100 tag 100']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100']
     diff = diffios.Compare(baseline, config, [])
@@ -171,7 +182,8 @@ def test_multiple_vars_ip_route_similar_ip():
     assert [] == diff.missing()
 
 
-def test_triple_vars_ip_route():
+def test_triple_variables_ip_route():
+    """ More than 2 variables in a single line """
     config = ['ip route 10.10.10.10 255.255.0.0 10.10.10.1 tag 100 and this']
     baseline = ['ip route {{ LAN_NET }} 255.255.0.0 {{ VLAN_99_IP }} tag 100 and {{ this }}']
     diff = diffios.Compare(baseline, config, [])
@@ -179,7 +191,23 @@ def test_triple_vars_ip_route():
     assert [] == diff.missing()
 
 
-def test_multiple_vars_with_regex_metacharacters():
+def test_dialer_interface():
+    """ Regular expression metacharacters ignored """
+    baseline = [
+        'interface Dialer1',
+        ' description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***'
+    ]
+    config = [
+        'interface Dialer1',
+        ' description *** FTTC on PSTN:020 8777 1953  CCT:IEUK644252 ***'
+    ]
+    diff = diffios.Compare(baseline, config, [])
+    assert [] == diff.additional()
+    assert [] == diff.missing()
+
+
+def test_multiple_variables_with_regex_metacharacters():
+    """ Regular Expression metacharacters ignored """
     baseline = ['description *** ADSL {{PSTN_NO}} {{CCT_ID}} ***',
                 'description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***']
     config = ['description *** ADSL 12345 67890 ***',
@@ -189,7 +217,8 @@ def test_multiple_vars_with_regex_metacharacters():
     assert [] == diff.missing()
 
 
-def test_single_multiple_word_vars():
+def test_single_multiple_word_variables():
+    """ Single variable word can account for multiple words """
     baseline = ['interface FastEthernet0/5', ' description {{ DESCRIPTION }}']
     config = ['interface FastEthernet0/5', ' description Data and Voice Access Port']
     diff = diffios.Compare(baseline, config, [])
@@ -197,7 +226,8 @@ def test_single_multiple_word_vars():
     assert [] == diff.missing()
 
 
-def test_multiple_multiple_word_vars():
+def test_multiple_multiple_word_variables():
+    """ Multiple single word variables can account for multiple words """
     baseline = ['interface FastEthernet0/5', ' description {{ VLAN }} connection to {{ BACKUP }}']
     config = ['interface FastEthernet0/5', ' description Vlan 99 connection to Core Backup']
     diff = diffios.Compare(baseline, config, [])
@@ -206,6 +236,7 @@ def test_multiple_multiple_word_vars():
 
 
 def test_multiple_bgp_config_lines_with_same_first_word():
+    """ Very similar lines starting with same word are different """
     baseline = [
         'router bgp {{BGP_AS}}',
         ' network {{LAN_NET}} mask 255.255.248.0',
@@ -234,6 +265,7 @@ def test_multiple_bgp_config_lines_with_same_first_word():
 
 
 def test_prefix_lists_with_seq_value_in_ip_address():
+    """ Very similar lines containing same words are different """
     baseline = [
         'ip prefix-list bgp-routes-out seq 5 permit {{IP_ADDRESS}}',
         'ip prefix-list bgp-routes-out seq 10 permit {{IP_ADDRESS}}',
@@ -243,20 +275,6 @@ def test_prefix_lists_with_seq_value_in_ip_address():
         'ip prefix-list bgp-routes-out seq 5 permit 10.14.4.0/23',
         'ip prefix-list bgp-routes-out seq 10 permit 10.25.0.12/32',
         'ip prefix-list bgp-routes-out seq 15 permit 10.14.5.64/27'
-    ]
-    diff = diffios.Compare(baseline, config, [])
-    assert [] == diff.additional()
-    assert [] == diff.missing()
-
-
-def test_dialer_interface():
-    baseline = [
-        'interface Dialer1',
-        ' description *** FTTC on PSTN:{{PSTN_NO}} CCT:{{CCT_ID}} ***'
-    ]
-    config = [
-        'interface Dialer1',
-        ' description *** FTTC on PSTN:020 8777 1953  CCT:IEUK644252 ***'
     ]
     diff = diffios.Compare(baseline, config, [])
     assert [] == diff.additional()
