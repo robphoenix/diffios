@@ -20,11 +20,14 @@ class Compare(object):
     """Docstring for Diff. """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
-        self._baseline = baseline
-        self._comparison = comparison
-        self._ignore_lines = ignore_lines
-        self.baseline = diffios.Config(self._baseline, self._ignore_lines)
-        self.comparison = diffios.Config(self._comparison, self._ignore_lines)
+        if isinstance(baseline, diffios.Config):
+            self.baseline = baseline
+        else:
+            self.baseline = diffios.Config(baseline, ignore_lines)
+        if isinstance(comparison, diffios.Config):
+            self.comparison = comparison
+        else:
+            self.comparison = diffios.Config(comparison, ignore_lines)
 
     @staticmethod
     def _compare_lines(target, guess):

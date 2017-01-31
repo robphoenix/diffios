@@ -90,6 +90,17 @@ def test_config(baseline):
     assert config == diffios.Config(config).config
 
 
+#  def test_config_raises_error_with_invalid_data():
+#      """
+#      config attribute should raise an error if passed anything other
+#      than a file or a list
+#      """
+#      invalid_data = [1, "config", {"data": "invalid"}]
+#      for data in invalid_data:
+#          with pytest.raises(RuntimeError):
+#              diffios.Config(data)
+
+
 def test_config_is_grouped_correctly_with_list():
     """
     Should return valid config as list of hierarchical blocks,

@@ -167,13 +167,13 @@ class Config(object):
         unable_to_open = "diffios.Config() could not open '{}'"
         if isinstance(data, list):
             return data
-        elif os.path.isfile(data):
-            try:
-                with open(data) as fin:
-                    return fin.readlines()
-            except IOError:
-                raise RuntimeError((unable_to_open.format(data)))
-        else:
+
+        try:
+            with open(data) as fin:
+                return fin.readlines()
+        except IOError:
+            raise RuntimeError((unable_to_open.format(data)))
+        except:
             raise RuntimeError(invalid_arg.format(data))
 
     @staticmethod
