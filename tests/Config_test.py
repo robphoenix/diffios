@@ -82,7 +82,7 @@ def test_ignores_is_empty_list_if_passed_empty_list():
     assert diffios.Config(config, ignore_lines=[]).ignore_lines == []
 
 
-def test_config(baseline, baseline_config):
+def test_config(baseline):
     """
     Config attribute should return the config as a list.
     """
@@ -151,25 +151,25 @@ def test_ignore_lines_from_list(ignores_file):
     assert expected == actual
 
 
-def test_ignored(ignores_file, baseline_config, ignored):
+def test_ignored(ignores_file, baseline, ignored):
     """
     Should return list of hierarchical blocks from config
     that are being ignored.
     """
     ignores = ignores_file.split('\n')
-    config = baseline_config.split('\n')
+    config = baseline.split('\n')
     expected = ignored
     actual = diffios.Config(config, ignores).ignored()
     assert expected == actual
 
 
-def test_recorded(ignores_file, baseline_config, recorded):
+def test_recorded(ignores_file, baseline, recorded):
     """
     Should return list of hierarchical blocks from config
     that are not being ignored.
     """
     ignores = ignores_file.split('\n')
-    config = baseline_config.split('\n')
+    config = baseline.split('\n')
     expected = recorded
     actual = diffios.Config(config, ignores).included()
     assert expected == actual
