@@ -56,10 +56,8 @@ class Config(object):
             ignore_lines = os.path.join(os.getcwd(), "ignores.txt")
         elif ignore_lines is None:
             ignore_lines = []
-        self._config = config
-        self._ignore_lines = ignore_lines
-        self.config = self._check_data(self._config)
-        self.ignore_lines = self._ignore(self._check_data(self._ignore_lines))
+        self.config = self._check_data(config)
+        self.ignore_lines = self._ignore(self._check_data(ignore_lines))
 
     def _valid_config(self):
         return [l.rstrip() for l in self.config if self._valid_line(l)]
@@ -170,7 +168,8 @@ class Config(object):
 
         try:
             with open(data) as fin:
-                return fin.readlines()
+                # remove '\n' from lines
+                return fin.read().splitlines()
         except IOError:
             raise RuntimeError((unable_to_open.format(data)))
         except:

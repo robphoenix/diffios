@@ -40,6 +40,14 @@ def test_raises_error_if_config_file_is_dir():
         diffios.Config(os.getcwd())
 
 
+def test_raises_error_if_invalid_data_given():
+    """
+    Should Raise Runtime Error if config file is invalid data.
+    """
+    with pytest.raises(RuntimeError):
+        diffios.Config({'data':'invalid'})
+
+
 def test_raises_error_if_provided_ignore_file_does_not_exist():
     """
     Should raise Runtime Error if given ignores file does not exist.
@@ -82,23 +90,22 @@ def test_ignores_is_empty_list_if_passed_empty_list():
     assert diffios.Config(config, ignore_lines=[]).ignore_lines == []
 
 
-def test_config(baseline):
+def test_config_attribute_returns_list_it_is_given(baseline):
     """
-    Config attribute should return the config as a list.
+    Config attribute should return the given config list.
     """
     config = baseline.split('\n')
     assert config == diffios.Config(config).config
 
 
-#  def test_config_raises_error_with_invalid_data():
-#      """
-#      config attribute should raise an error if passed anything other
-#      than a file or a list
-#      """
-#      invalid_data = [1, "config", {"data": "invalid"}]
-#      for data in invalid_data:
-#          with pytest.raises(RuntimeError):
-#              diffios.Config(data)
+def test_config_attribute_returns_list_of_given_file(baseline):
+    """
+    Config attribute should return given config file as a list.
+    """
+    config = baseline.split('\n')
+    config_file_data = mock.mock_open(read_data=baseline)
+    with mock.patch('diffios.config.open', config_file_data, create=True) as mock_open:
+        assert config == diffios.Config(config_file_data).config
 
 
 def test_config_is_grouped_correctly_with_list():
