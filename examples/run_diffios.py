@@ -20,7 +20,7 @@ with open(output, 'w') as csvfile:
     csvwriter.writerow(["Comparison", "Baseline", "Additional", "Missing"])
     files = sorted(os.listdir(COMPARISON_DIR))
     num_files = len(files)
-    for i, fin in enumerate(files):
+    for i, fin in enumerate(files, 1):
         #  print("diffios: {:>3}/{} Processing: {}".format(i, num_files, fin),
         #        end="\r")
         comparison_file = os.path.join(COMPARISON_DIR, fin)
@@ -31,5 +31,6 @@ with open(output, 'w') as csvfile:
             diff.pprint_additional(),
             diff.pprint_missing()
         ])
+        print("diffios: {} ({}/{})".format(fin, i, num_files))
         print(diff.delta())
     print("diffios: Report: {}".format(output))
