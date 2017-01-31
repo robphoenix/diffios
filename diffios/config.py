@@ -10,23 +10,23 @@ class Config(object):
     """Config prepares a Cisco IOS Config to diff.
 
     Config takes a Cisco IOS config, as a file or a
-    list, extracts the device hostname, removes any invalid
-    lines, such as comments, breaks the config into a
-    hierarchical block structure and partitions the config
-    according to a list of lines to ignore.
+    list, removes any invalid lines, such as comments,
+    breaks the config into a hierarchical block structure
+    and partitions the config according to a list of
+    lines to ignore.
 
     Attributes:
-        ignores (list): List of lines to ignore
         config (list): List of valid config lines
+        ignore_lines (list): List of lines to ignore
 
     Args:
         config (str|list): Path to config file, or list
             containing lines of config
 
     Kwargs:
-        ignores (str|list): Path to ignores file, or list
+        ignore_lines (str|list): Path to ignores file, or list
             containing lines to ignore. Defaults to ignores
-            file in current working directory.
+            file in current working directory if it exists.
 
     >>> config = [
     ... '!',

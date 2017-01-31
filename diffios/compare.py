@@ -17,17 +17,103 @@ DELIMITER_END = '}}'
 
 class Compare(object):
 
-    """Docstring for Diff. """
+    """Compare compares a Cisco IOS config against a baseline.
+
+    Compare takes a baseline config and a comparison config.
+    These can be files, lists or diffios.Config objects. If
+    they are not diffios.Config objects they will be converted
+    to these. Compare can also take a list of lines to ignore,
+    as a list or a file, or default to an ignores.txt file in
+    the project root.
+    Compare will provide a diff between the comparison and
+    baseline configs, detailing what is missing from the
+    comparison config that is in the baseline config and what
+    is additional to the comparison config that is not in the
+    baseline config.
+    Compare also provides convenience methods for displaying
+    this data or saving it to file.
+
+    Attributes:
+        baseline(diffios.Config): A diffios.Config object,
+            initialised with the baseline config
+        comparison(diffios.Config): A diffios.Config object,
+            initialised with the comparison config
+        ignore_lines(list): List of lines to ignore
+
+    Args:
+        baseline (str|list|diffios.Config): Path to baseline
+            config file, list containing lines of config,
+            or diffios.Config object
+        comparison (str|list|diffios.Config): Path to comparison
+            config file, list containing lines of config,
+            or diffios.Config object
+
+    Kwargs:
+        ignore_lines (str|list): Path to ignores file, or list
+            containing lines to ignore. Defaults to ignores
+            file in current working directory if it exists.
+
+
+    >>> baseline = [
+    ... 'hostname {{ hostname }}',
+    ... 'interface FastEthernet 0/1',
+    ... ' ip address {{ ip_address }}',
+    ... ' switchport mode access',
+    ... 'ip domain-name {{ domain }}']
+    >>> comparison = [
+    ... 'hostname COMPARISON',
+    ... 'interface FastEthernet 0/1',
+    ... ' ip address 192.168.0.1',
+    ... ' switchport mode trunk',
+    ... 'interface FastEthernet 0/2',
+    ... ' ip address 192.168.0.2']
+    >>> diff = diffios.Compare(baseline, comparison)
+    >>> diff.additional()
+    [['interface FastEthernet 0/1', ' switchport mode trunk'], ['interface FastEthernet 0/2', ' ip address 192.168.0.2']]
+    >>> diff.missing()
+    [['interface FastEthernet 0/1', ' switchport mode access'], ['ip domain-name {{ domain }}']]
+    >>> print(diff.delta())
+    --- baseline
+    +++ comparison
+    <BLANKLINE>
+    -   1: interface FastEthernet 0/1
+    -        switchport mode access
+    -   2: ip domain-name {{ domain }}
+    <BLANKLINE>
+    +   1: interface FastEthernet 0/1
+    +        switchport mode trunk
+    +   2: interface FastEthernet 0/2
+    +        ip address 192.168.0.2
+    <BLANKLINE>
+    >>> print(diff.pprint_additional())
+    interface FastEthernet 0/1
+     switchport mode trunk
+    <BLANKLINE>
+    interface FastEthernet 0/2
+     ip address 192.168.0.2
+    >>> print(diff.pprint_missing())
+    interface FastEthernet 0/1
+     switchport mode access
+    <BLANKLINE>
+    ip domain-name {{ domain }}
+
+    """
 
     def __init__(self, baseline, comparison, ignore_lines=None):
-        if isinstance(baseline, diffios.Config):
-            self.baseline = baseline
+        self._baseline = baseline
+        self._comparison = comparison
+        self._ignore_lines = ignore_lines
+
+        if isinstance(self._baseline, diffios.Config):
+            self.baseline = self._baseline
         else:
-            self.baseline = diffios.Config(baseline, ignore_lines)
-        if isinstance(comparison, diffios.Config):
-            self.comparison = comparison
+            self.baseline = diffios.Config(self._baseline, self._ignore_lines)
+        if isinstance(self._comparison, diffios.Config):
+            self.comparison = self._comparison
         else:
-            self.comparison = diffios.Config(comparison, ignore_lines)
+            self.comparison = diffios.Config(self._comparison, self._ignore_lines)
+        if self.baseline and self.comparison:
+            self.ignore_lines = self.baseline.ignore_lines
 
     @staticmethod
     def _compare_lines(target, guess):
