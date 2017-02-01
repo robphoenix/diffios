@@ -14,7 +14,6 @@ from collections import namedtuple
 
 
 class Config(object):
-
     """Config prepares a Cisco IOS Config to diff.
 
     Config takes a Cisco IOS config, as a file or a
@@ -60,7 +59,8 @@ class Config(object):
     """
 
     def __init__(self, config, ignore_lines=None):
-        if ignore_lines is None and os.path.exists(os.path.join(os.getcwd(), 'ignores.txt')):
+        if ignore_lines is None and os.path.exists(
+                os.path.join(os.getcwd(), 'ignores.txt')):
             ignore_lines = os.path.join(os.getcwd(), "ignores.txt")
         elif ignore_lines is None:
             ignore_lines = []
@@ -137,7 +137,8 @@ class Config(object):
     @staticmethod
     def _valid_line(line):
         line = line.strip()
-        return len(line) > 0 and not line.startswith("!") and line != '^' and line != '^C'
+        return len(line) > 0 and not line.startswith(
+            "!") and line != '^' and line != '^C'
 
     def _ignore_line(self, line):
         for line_to_ignore in self.ignore_lines:

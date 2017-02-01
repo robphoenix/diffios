@@ -15,6 +15,7 @@ Attributes:
 """
 import re
 from collections import namedtuple
+
 try:
     from queue import Queue
 except ImportError:
