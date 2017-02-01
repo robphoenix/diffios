@@ -28,7 +28,6 @@ DELIMITER_END = '}}'
 
 
 class Compare(object):
-
     """Compare compares a Cisco IOS config against a baseline.
 
     Compare takes a baseline config and a comparison config.
@@ -127,7 +126,8 @@ class Compare(object):
         if isinstance(self._comparison, diffios.Config):
             self.comparison = self._comparison
         else:
-            self.comparison = diffios.Config(self._comparison, self._ignore_lines)
+            self.comparison = diffios.Config(self._comparison,
+                                             self._ignore_lines)
         if self.baseline and self.comparison:
             self.ignore_lines = self.baseline.ignore_lines
 
@@ -175,8 +175,8 @@ class Compare(object):
         missing = []
         while target_children:
             child_target = target_children.pop()
-            child_search = self._binary_search(
-                child_target, comparison_children)
+            child_search = self._binary_search(child_target,
+                                               comparison_children)
             if child_search:
                 comparison_children.remove(child_search)
             else:
@@ -215,8 +215,9 @@ class Compare(object):
                 if comparison_children == -1:
                     missing.append(baseline_group)
                 elif comparison_children:
-                    child_lookup = self._child_lookup(
-                        baseline_parent, baseline_children, comparison_children)
+                    child_lookup = self._child_lookup(baseline_parent,
+                                                      baseline_children,
+                                                      comparison_children)
                     if child_lookup.additional:
                         additional.append(child_lookup.additional)
                     if child_lookup.missing:
@@ -228,15 +229,15 @@ class Compare(object):
             target = with_vars.pop()
             target_parent = target[0]
             target_children = sorted(target[1:])
-            parent_search = self._binary_search(
-                target_parent, comparison.keys())
+            parent_search = self._binary_search(target_parent,
+                                                comparison.keys())
             if parent_search:
                 comparison_children = sorted(comparison.pop(parent_search))
-                child_search = self._child_search(
-                    target_children, comparison_children)
+                child_search = self._child_search(target_children,
+                                                  comparison_children)
                 if child_search.additional:
-                    additional.append(
-                        [parent_search] + child_search.additional)
+                    additional.append([parent_search] +
+                                      child_search.additional)
                 if child_search.missing:
                     missing.append([target_parent] + child_search.missing)
             else:
@@ -246,12 +247,12 @@ class Compare(object):
     def _search(self):
         baseline = self._baseline_queue()
         comparison = self._comparison_hash()
-        missing, additional, with_vars = self._hash_lookup(
-            baseline, comparison)
-        missing, additional = self._with_vars_search(
-            with_vars, comparison, missing, additional)
-        additional = sorted(
-            [[k] + v for k, v in comparison.items()] + additional)
+        missing, additional, with_vars = self._hash_lookup(baseline,
+                                                           comparison)
+        missing, additional = self._with_vars_search(with_vars, comparison,
+                                                     missing, additional)
+        additional = sorted([[k] + v
+                             for k, v in comparison.items()] + additional)
         return {'missing': missing, 'additional': additional}
 
     def additional(self):
@@ -302,7 +303,8 @@ class Compare(object):
         for i, group in enumerate(data, 1):
             deltas += "\n{} {:>3}: {}".format(prefix, i, group[0])
             if len(group) > 1:
-                deltas += "\n{}       {}".format(prefix, "\n      ".join(group[1:]))
+                deltas += "\n{}      {}".format(prefix,
+                                                "\n      ".join(group[1:]))
         return deltas
 
     def delta(self):
