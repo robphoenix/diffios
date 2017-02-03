@@ -12,6 +12,8 @@ import os
 import re
 from collections import namedtuple
 
+import diffios
+
 
 class Config(object):
     """Config prepares a Cisco IOS Config to diff.
@@ -142,6 +144,10 @@ class Config(object):
 
     def _ignore_line(self, line):
         for line_to_ignore in self.ignore_lines:
+            for metacharacter in diffios.REGEX_METACHARACTERS:
+                if metacharacter in line_to_ignore:
+                    line_to_ignore = line_to_ignore.replace(
+                        metacharacter, '\{}'.format(metacharacter))
             if re.search(line_to_ignore, line.lower()):
                 return True
         return False

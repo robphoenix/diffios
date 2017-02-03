@@ -6,12 +6,6 @@ Author: Rob Phoenix
 Email: rob@robphoenix.com
 Github: https://github.com/robphoenix
 Description: Compare and diff Cisco IOS configs
-
-Attributes:
-    DELIMITER (str): A regular expression that defines a config variable
-    DELIMITER_START (str): The opening variable delimiter
-    DELIMITER_END (str): The closing variable delimiter
-
 """
 import re
 from collections import namedtuple
@@ -22,10 +16,6 @@ except ImportError:
     from Queue import Queue
 
 import diffios
-
-DELIMITER = r'{{[^{}]+}}'
-DELIMITER_START = '{{'
-DELIMITER_END = '}}'
 
 
 class Compare(object):
@@ -76,13 +66,13 @@ class Compare(object):
     +++ comparison
     <BLANKLINE>
     -   1: interface FastEthernet 0/1
-    -        switchport mode access
+    -       switchport mode access
     -   2: ip domain-name {{ domain }}
     <BLANKLINE>
     +   1: interface FastEthernet 0/1
-    +        switchport mode trunk
+    +       switchport mode trunk
     +   2: interface FastEthernet 0/2
-    +        ip address 192.168.0.2
+    +       ip address 192.168.0.2
     <BLANKLINE>
     >>> print(diff.pprint_additional())
     interface FastEthernet 0/1
@@ -134,10 +124,10 @@ class Compare(object):
 
     @staticmethod
     def _compare_lines(target, guess):
-        re_metacharacters = ['*']
-        for char in re_metacharacters:
-            if char in target:
-                target = target.replace(char, '\{}'.format(char))
+        for metacharacter in diffios.REGEX_METACHARACTERS:
+            if metacharacter in target:
+                target = target.replace(metacharacter,
+                                        '\{}'.format(metacharacter))
         target_re = re.sub(r'{{[^{}]+}}', '(.+)', target)
         match = re.search(target_re, guess)
         if match:
@@ -209,7 +199,7 @@ class Compare(object):
             baseline_parent = baseline_group[0]
             baseline_children = baseline_group[1:]
             baseline_family = ' '.join(baseline_group)
-            if DELIMITER_START in baseline_family:
+            if diffios.DELIMITER_START in baseline_family:
                 with_vars.append(baseline_group)
             else:
                 comparison_children = comparison.pop(baseline_parent, -1)

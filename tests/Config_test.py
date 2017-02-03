@@ -45,7 +45,7 @@ def test_raises_error_if_invalid_data_given():
     Should Raise Runtime Error if config file is invalid data.
     """
     with pytest.raises(RuntimeError):
-        diffios.Config({'data':'invalid'})
+        diffios.Config({'data': 'invalid'})
 
 
 def test_raises_error_if_provided_ignore_file_does_not_exist():
@@ -65,9 +65,11 @@ def test_uses_default_ignores_file_if_it_exists(ignores_file):
     ignores_data = mock.mock_open(read_data=ignores_file)
     with mock.patch('diffios.config.os.path') as mock_path:
         mock_path.exists.return_value = True
-        with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
+        with mock.patch(
+                'diffios.config.open', ignores_data, create=True) as mock_open:
             diffios.Config(config).ignore_lines
-            mock_open.assert_called_once_with(os.path.join('..', 'ignores.txt'))
+            mock_open.assert_called_once_with(
+                os.path.join('..', 'ignores.txt'))
 
 
 def test_ignores_is_empty_list_if_no_default_ignore_file():
@@ -104,7 +106,8 @@ def test_config_attribute_returns_list_of_given_file(baseline):
     """
     config = baseline.split('\n')
     config_file_data = mock.mock_open(read_data=baseline)
-    with mock.patch('diffios.config.open', config_file_data, create=True) as mock_open:
+    with mock.patch(
+            'diffios.config.open', config_file_data, create=True) as mock_open:
         assert config == diffios.Config(config_file_data).config
 
 
@@ -114,19 +117,16 @@ def test_config_is_grouped_correctly_with_list():
     from a config given as a list.
     """
     config = [
-        'interface Vlan1',
-        ' no ip address',
-        ' shutdown',
-        'hostname ROUTER',
-        'interface Vlan2',
-        ' ip address 192.168.0.1 255.255.255.0',
-        ' no shutdown']
-    grouped = sorted([
-        ['interface Vlan1', ' no ip address', ' shutdown'],
-        ['hostname ROUTER'],
-        ['interface Vlan2',
-         ' ip address 192.168.0.1 255.255.255.0',
-         ' no shutdown']])
+        'interface Vlan1', ' no ip address', ' shutdown', 'hostname ROUTER',
+        'interface Vlan2', ' ip address 192.168.0.1 255.255.255.0',
+        ' no shutdown'
+    ]
+    grouped = sorted([['interface Vlan1', ' no ip address', ' shutdown'],
+                      ['hostname ROUTER'], [
+                          'interface Vlan2',
+                          ' ip address 192.168.0.1 255.255.255.0',
+                          ' no shutdown'
+                      ]])
     assert grouped == diffios.Config(config, ignore_lines=[]).included()
 
 
@@ -138,8 +138,10 @@ def test_config_is_grouped_correctly_with_file(baseline, baseline_blocks):
     with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
         config_data = mock.mock_open(read_data=baseline)
-        with mock.patch('diffios.config.open', config_data, create=True) as mock_open:
-            actual = diffios.Config('baseline.conf', ignore_lines=[]).included()
+        with mock.patch(
+                'diffios.config.open', config_data, create=True) as mock_open:
+            actual = diffios.Config(
+                'baseline.conf', ignore_lines=[]).included()
             mock_open.assert_called_once_with('baseline.conf')
             assert baseline_blocks == actual
 
@@ -153,8 +155,10 @@ def test_ignore_lines_from_file(ignores_file):
     ignores_data = mock.mock_open(read_data=ignores_file)
     with mock.patch('diffios.config.os.path.isfile') as mock_isfile:
         mock_isfile.return_value = True
-        with mock.patch('diffios.config.open', ignores_data, create=True) as mock_open:
-            actual = diffios.Config(config, ignore_lines='ignores_file').ignore_lines
+        with mock.patch(
+                'diffios.config.open', ignores_data, create=True) as mock_open:
+            actual = diffios.Config(
+                config, ignore_lines='ignores_file').ignore_lines
             mock_open.assert_called_once_with('ignores_file')
             assert expected == actual
 
@@ -165,7 +169,8 @@ def test_ignore_lines_from_list(ignores_file):
     """
     config = ['hostname ROUTER']
     expected = ignores_file.lower().split('\n')
-    actual = diffios.Config(config, ignore_lines=ignores_file.split('\n')).ignore_lines
+    actual = diffios.Config(
+        config, ignore_lines=ignores_file.split('\n')).ignore_lines
     assert expected == actual
 
 
@@ -209,16 +214,14 @@ def test_child_line_is_ignored():
     Should ignore only line within a hierarchical block.
     """
     config = [
-        '!',
-        'interface FastEthernet0/1',
-        ' description **Link to Core**',
-        ' ip address 192.168.0.1 255.255.255.0',
-        '!'
+        '!', 'interface FastEthernet0/1', ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0', '!'
     ]
     ignores = [' description']
     d = diffios.Config(config=config, ignore_lines=ignores)
-    assert d.included() == [['interface FastEthernet0/1',
-                             ' ip address 192.168.0.1 255.255.255.0']]
+    assert d.included() == [[
+        'interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.0'
+    ]]
     assert d.ignored() == [[' description **Link to Core**']]
 
 
@@ -227,12 +230,9 @@ def test_whole_block_is_ignored():
     Should ignore whole block if parent line is in ignores list.
     """
     config = [
-        'hostname ROUTER',
-        '!',
-        'interface FastEthernet0/1',
+        'hostname ROUTER', '!', 'interface FastEthernet0/1',
         ' description **Link to Core**',
-        ' ip address 192.168.0.1 255.255.255.0',
-        '!'
+        ' ip address 192.168.0.1 255.255.255.0', '!'
     ]
     ignores = ['fastethernet0/1']
     d = diffios.Config(config=config, ignore_lines=ignores)
@@ -242,3 +242,25 @@ def test_whole_block_is_ignored():
         ' ip address 192.168.0.1 255.255.255.0',
     ]]
     assert d.included() == [['hostname ROUTER']]
+
+
+def test_deal_correctly_with_regex_metacharacters_in_ignore_lines():
+    """
+    Regular Expression metacharacters in the ignore_lines should not Error
+    """
+    config = [
+        '*                                                                    *',
+        '**********************************************************************',
+        'hostname ROUTER', '!', 'interface FastEthernet0/1',
+        ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0', '!'
+    ]
+    expected = [['hostname ROUTER'], [
+        'interface FastEthernet0/1', ' description **Link to Core**',
+        ' ip address 192.168.0.1 255.255.255.0'
+    ]]
+    ignore_lines = [
+        "*                                                                    *",
+        "**********************************************************************"
+    ]
+    assert diffios.Config(config, ignore_lines).included() == expected
