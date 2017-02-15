@@ -16,8 +16,8 @@ with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
 
 setup(
     name='diffios',
-    version='0.0.1',
-    description='Diff Cisco device configurations.',
+    version='0.0.2',
+    description='Compare Cisco device configurations against a baseline.',
     long_description=long_description,
     author='Rob Phoenix',
     author_email='rob@robphoenix.com',

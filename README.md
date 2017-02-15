@@ -11,6 +11,9 @@ _|    _|  _|    _|        _|      _|  _|    _|      _|_|
 
 > Compare Cisco IOS configurations against a baseline.
 
+[![Travis](https://img.shields.io/travis/robphoenix/diffios.svg?style=flat-square)](https://travis-ci.org/robphoenix/diffios)
+[![PyPI](https://img.shields.io/pypi/v/diffios.svg?style=flat-square)](https://pypi.python.org/pypi/diffios)
+
 [![PyPI](https://img.shields.io/pypi/v/diffios.svg)](https://pypi.python.org/pypi/diffios) [![stability-unstable](https://img.shields.io/badge/stability-unstable-yellow.svg)](https://github.com/emersion/stability-badges#unstable) [![Build Status](https://travis-ci.org/robphoenix/diffios.svg?branch=master)](https://travis-ci.org/robphoenix/diffios) [![PyPI](https://img.shields.io/pypi/dm/diffios.svg)](https://pypi.python.org/pypi/diffios) [![Coverage Status](https://coveralls.io/repos/github/robphoenix/diffios/badge.svg?branch=master)](https://coveralls.io/github/robphoenix/diffios?branch=master) [![Code Issues](https://www.quantifiedcode.com/api/v1/project/04b61eeff2484472b673079338c87c4a/badge.svg)](https://www.quantifiedcode.com/app/project/04b61eeff2484472b673079338c87c4a)
 
 diffios is a Python library that compares Cisco IOS configurations, outputting
