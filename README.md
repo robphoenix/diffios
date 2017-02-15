@@ -23,8 +23,69 @@ Install via pip
 pip install diffios
 ```
 
-## Usage example
+## Usage examples (TODO)
 
+```python
+>>> baseline = [
+... 'hostname {{ hostname }}',
+... 'interface FastEthernet 0/1',
+... ' ip address {{ ip_address }}',
+... ' switchport mode access',
+... 'ip domain-name {{ domain }}']
+>>> comparison = [
+... 'hostname COMPARISON',
+... 'interface FastEthernet 0/1',
+... ' ip address 192.168.0.1',
+... ' switchport mode trunk',
+... 'interface FastEthernet 0/2',
+... ' ip address 192.168.0.2']
+>>> diff = diffios.Compare(baseline, comparison)
+>>> diff.additional()
+[
+    [
+        'interface FastEthernet 0/1',
+        ' switchport mode trunk'
+    ],
+    [
+        'interface FastEthernet 0/2',
+        ' ip address 192.168.0.2'
+    ]
+]
+>>> diff.missing()
+[
+    [
+        'interface FastEthernet 0/1',
+        ' switchport mode access'
+    ],
+    [
+        'ip domain-name {{ domain }}'
+    ]
+]
+>>> print(diff.delta())
+--- baseline
++++ comparison
+ 
+-   1: interface FastEthernet 0/1
+-       switchport mode access
+-   2: ip domain-name {{ domain }}
+ 
++   1: interface FastEthernet 0/1
++       switchport mode trunk
++   2: interface FastEthernet 0/2
++       ip address 192.168.0.2
+ 
+>>> print(diff.pprint_additional())
+interface FastEthernet 0/1
+ switchport mode trunk
+ 
+interface FastEthernet 0/2
+ ip address 192.168.0.2
+>>> print(diff.pprint_missing())
+interface FastEthernet 0/1
+ switchport mode access
+ 
+ip domain-name {{ domain }}
+```
 
 ## Development setup
 
