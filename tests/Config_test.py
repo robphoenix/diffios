@@ -22,7 +22,7 @@ def test_raises_error_if_config_not_given():
         diffios.Config()
 
 
-def test_raises_error_if_not_config_file_does_not_exist():
+def test_raises_error_if_config_file_does_not_exist():
     """
     Should raise Runtime Error if given config file does not exist.
     """
@@ -57,36 +57,18 @@ def test_raises_error_if_provided_ignore_file_does_not_exist():
         diffios.Config(config, ignore_lines='file_that_does_not_exist')
 
 
-def test_uses_default_ignores_file_if_it_exists(ignores_file):
+def test_ignores_is_empty_list_if_no_ignore_file_given():
     """
-    Should use the default ignores file if it exists.
+    Ignores should be None if no ignores parameter is passed.
     """
     config = ['hostname ROUTER']
-    ignores_data = mock.mock_open(read_data=ignores_file)
-    with mock.patch('diffios.config.os.path') as mock_path:
-        mock_path.exists.return_value = True
-        with mock.patch(
-                'diffios.config.open', ignores_data, create=True) as mock_open:
-            diffios.Config(config).ignore_lines
-            mock_open.assert_called_once_with(
-                os.path.join('..', 'ignores.txt'))
-
-
-def test_ignores_is_empty_list_if_no_default_ignore_file():
-    """
-    Ignores should be empty if there is no default ignores file,
-    and no ignores parameter is passed.
-    """
-    with mock.patch('diffios.config.os.path') as mock_path:
-        mock_path.exists.return_value = False
-        config = ['hostname ROUTER']
-        assert diffios.Config(config).ignore_lines == []
+    assert diffios.Config(config).ignore_lines == []
 
 
 def test_ignores_is_empty_list_if_passed_empty_list():
     """
     Ignores attribute should be an empty list if ignores parameter
-    is an empty list, to avoid default ignores file.
+    is an empty list.
     """
     config = ['hostname ROUTER']
     assert diffios.Config(config, ignore_lines=[]).ignore_lines == []
@@ -105,10 +87,9 @@ def test_config_attribute_returns_list_of_given_file(baseline):
     Config attribute should return given config file as a list.
     """
     config = baseline.split('\n')
-    config_file_data = mock.mock_open(read_data=baseline)
-    with mock.patch(
-            'diffios.config.open', config_file_data, create=True) as mock_open:
-        assert config == diffios.Config(config_file_data).config
+    data = mock.mock_open(read_data=baseline)
+    with mock.patch('diffios.config.open', data, create=True) as mock_open:
+        assert config == diffios.Config(data).config
 
 
 def test_config_is_grouped_correctly_with_list():

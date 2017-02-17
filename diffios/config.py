@@ -34,8 +34,7 @@ class Config(object):
 
     Kwargs:
         ignore_lines (str|list): Path to ignores file, or list
-            containing lines to ignore. Defaults to ignores
-            file in current working directory if it exists.
+            containing lines to ignore. Defaults to empty list.
 
     >>> config = [
     ... '!',
@@ -61,13 +60,11 @@ class Config(object):
     """
 
     def __init__(self, config, ignore_lines=None):
-        if ignore_lines is None and os.path.exists(
-                os.path.join(os.getcwd(), 'ignores.txt')):
-            ignore_lines = os.path.join(os.getcwd(), "ignores.txt")
-        elif ignore_lines is None:
+        self.config = self._check_data('config', config)
+        if ignore_lines is None:
             ignore_lines = []
-        self.config = self._check_data(config)
-        self.ignore_lines = self._ignore(self._check_data(ignore_lines))
+        self.ignore_lines = self._ignore(
+            self._check_data('ignore_lines', ignore_lines))
 
     def _valid_config(self):
         return [l.rstrip() for l in self.config if self._valid_line(l)]
@@ -117,24 +114,21 @@ class Config(object):
 
     @staticmethod
     def _ignore(ignore):
-        ignore = [line.strip().lower() for line in ignore]
-        return ignore
+        return [line.strip().lower() for line in ignore]
 
     @staticmethod
-    def _check_data(data):
-        invalid_arg = "diffios.Config() received an invalid argument: config={}\n"
+    def _check_data(name, data):
+        invalid_arg = "diffios.Config() received an invalid argument: {}={}\n"
         unable_to_open = "diffios.Config() could not open '{}'"
         if isinstance(data, list):
             return data
-
         try:
             with open(data) as fin:
-                # remove '\n' from lines
-                return fin.read().splitlines()
+                return fin.read().splitlines()  # remove '\n' from lines
         except IOError:
             raise RuntimeError((unable_to_open.format(data)))
         except:
-            raise RuntimeError(invalid_arg.format(data))
+            raise RuntimeError(invalid_arg.format(name, data))
 
     @staticmethod
     def _valid_line(line):
