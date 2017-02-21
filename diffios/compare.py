@@ -294,8 +294,8 @@ class Compare(object):
         for i, group in enumerate(data, 1):
             deltas += "\n{} {:>3}: {}".format(prefix, i, group[0])
             if len(group) > 1:
-                deltas += "\n{}      {}".format(prefix,
-                                                "\n      ".join(group[1:]))
+                deltas += "\n{}      {}".format(
+                    prefix, "\n{}      ".format(prefix).join(group[1:]))
         return deltas
 
     def delta(self):
