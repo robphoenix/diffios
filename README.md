@@ -132,6 +132,67 @@ Last configuration change
 NVRAM config last updated
 ```
 
+```python
+>>> import diffios
+>>> baseline = "examples/from_readme/baseline.txt"
+>>> comparison = "examples/from_readme/device_01.txt"
+>>> ignore = "examples/from_readme/ignore.txt"
+>>> diff = diffios.Compare(baseline, comparison, ignore)
+>>> print(diff.delta())
+--- baseline
++++ comparison
+
+-   1: interface FastEthernet0/1
+-       ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
+-   2: interface Vlan200
+-       description Corporate
+-       ip address {{ VLAN200_IP }} 255.255.255.0
+-       no shutdown
+-   3: line vty 0 4
+-       transport input ssh
+-       transport output ssh
+-   4: username admin privilege 15 secret 5 {{SECRET}}
+
++   1: interface FastEthernet0/1
++       ip address 192.168.0.1 255.255.255.128
++   2: interface Vlan300
++       description Corporate
++       ip address 10.10.10.2 255.255.255.0
++       no shutdown
++   3: ip route 0.0.0.0 0.0.0.0 192.168.0.2
++   4: line vty 0 4
++       transport input telnet ssh
++       transport output telnet ssh
+```
+
+```python
+import os
+import csv
+
+import diffios
+
+IGNORE_FILE = os.path.join(os.getcwd(), "ignores.txt")
+COMPARISON_DIR = os.path.join(os.getcwd(), "configs", "comparisons")
+BASELINE_FILE = os.path.join(
+    os.getcwd(), "configs", "baselines", "baseline.txt")
+
+output = os.path.join(os.getcwd(), "diffs.csv")
+
+with open(output, 'w') as csvfile:
+    csvwriter = csv.writer(csvfile, lineterminator='\n')
+    csvwriter.writerow(["Comparison", "Baseline", "Additional", "Missing"])
+    files = sorted(os.listdir(COMPARISON_DIR))
+    for f in files:
+        comparison_file = os.path.join(COMPARISON_DIR, f)
+        diff = diffios.Compare(BASELINE_FILE, comparison_file, IGNORE_FILE)
+        csvwriter.writerow([
+            f,
+            os.path.basename(BASELINE_FILE),
+            diff.pprint_additional(),
+            diff.pprint_missing()
+        ])
+```
+
 ## Development setup
 
 To run the test suite
