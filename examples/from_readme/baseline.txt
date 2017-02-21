@@ -1,0 +1,42 @@
+version 15.3
+!
+hostname ABC{{ SITE_ID }}RT01
+!
+!
+ip domain name diffios.dev
+!
+username admin privilege 15 secret 5 {{SECRET}}
+!
+interface Loopback0
+ ip address {{LOOPBACK_IP}} 255.255.255.255
+!
+!
+interface FastEthernet0/1
+ description *** Link to Core ***
+ ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/2
+ no ip address
+ shutdown
+!
+interface Vlan100
+ description User
+ ip address {{ VLAN100_IP}} 255.255.255.0
+!
+interface Vlan200
+ description Corporate
+ ip address {{ VLAN200_IP }} 255.255.255.0
+ no shutdown
+!
+!
+line vty 0 4
+ exec-timeout 5 0
+ login local
+ transport input ssh
+ transport output ssh
+!
+!
+end
+

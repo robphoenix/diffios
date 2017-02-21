@@ -1,0 +1,48 @@
+Building configuration...
+
+Current configuration : 1579 bytes
+!
+! Last configuration change at 12:32:40 UTC Thu Oct 27 2016
+! NVRAM config last updated at 16:10:30 UTC Tue Nov 8 2016 by admin
+version 15.3
+!
+hostname ABC12345RT01
+!
+!
+ip domain name diffios.dev
+!
+interface Loopback0
+ ip address 192.168.100.1 255.255.255.255
+!
+!
+interface FastEthernet0/1
+ description *** Link to Core ***
+ ip address 192.168.0.1 255.255.255.128
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/2
+ no ip address
+ shutdown
+!
+interface Vlan100
+ description User
+ ip address 10.10.10.1 255.255.255.0
+!
+interface Vlan300
+ description Corporate
+ ip address 10.10.10.2 255.255.255.0
+ no shutdown
+!
+ip route 0.0.0.0 0.0.0.0 192.168.0.2
+!
+!
+line vty 0 4
+ exec-timeout 5 0
+ login local
+ transport input telnet ssh
+ transport output telnet ssh
+!
+!
+end
+
