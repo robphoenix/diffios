@@ -5,10 +5,10 @@ hostname ABC{{ SITE_ID }}RT01
 !
 ip domain name diffios.dev
 !
-username admin privilege 15 secret 5 {{SECRET}}
+username admin privilege 15 secret 5 {{ SECRET }}
 !
 interface Loopback0
- ip address {{LOOPBACK_IP}} 255.255.255.255
+ ip address {{ LOOPBACK_IP }} 255.255.255.255
 !
 !
 interface FastEthernet0/1
@@ -23,7 +23,7 @@ interface FastEthernet0/2
 !
 interface Vlan100
  description User
- ip address {{ VLAN100_IP}} 255.255.255.0
+ ip address {{ VLAN100_IP }} 255.255.255.0
 !
 interface Vlan200
  description Corporate
