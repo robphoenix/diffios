@@ -56,34 +56,34 @@ ip domain name diffios.dev
 username admin privilege 15 secret 5 {{ SECRET }}
 !
 interface Loopback0
-ip address {{ LOOPBACK_IP }} 255.255.255.255
+ ip address {{ LOOPBACK_IP }} 255.255.255.255
 !
 !
 interface FastEthernet0/1
-description *** Link to Core ***
-ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
-duplex auto
-speed auto
+ description *** Link to Core ***
+ ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
+ duplex auto
+ speed auto
 !
 interface FastEthernet0/2
-no ip address
-shutdown
+ no ip address
+ shutdown
 !
 interface Vlan100
-description User
-ip address {{ VLAN100_IP }} 255.255.255.0
+ description User
+ ip address {{ VLAN100_IP }} 255.255.255.0
 !
 interface Vlan200
-description Corporate
-ip address {{ VLAN200_IP }} 255.255.255.0
-no shutdown
+ description Corporate
+ ip address {{ VLAN200_IP }} 255.255.255.0
+ no shutdown
 !
 !
 line vty 0 4
-exec-timeout 5 0
-login local
-transport input ssh
-transport output ssh
+ exec-timeout 5 0
+ login local
+ transport input ssh
+ transport output ssh
 !
 !
 end
@@ -114,37 +114,37 @@ hostname ABC12345RT01
 ip domain name diffios.dev
 !
 interface Loopback0
-ip address 192.168.100.1 255.255.255.255
+ ip address 192.168.100.1 255.255.255.255
 !
 !
 interface FastEthernet0/1
-description *** Link to Core ***
-ip address 192.168.0.1 255.255.255.128
-duplex auto
-speed auto
+ description *** Link to Core ***
+ ip address 192.168.0.1 255.255.255.128
+ duplex auto
+ speed auto
 !
 interface FastEthernet0/2
-ip address 192.168.0.2 255.255.255.0
-duplex auto
-speed auto
+ ip address 192.168.0.2 255.255.255.0
+ duplex auto
+ speed auto
 !
 interface Vlan100
-description User
-ip address 10.10.10.1 255.255.255.0
+ description User
+ ip address 10.10.10.1 255.255.255.0
 !
 interface Vlan300
-description Corporate
-ip address 10.10.10.2 255.255.255.0
-no shutdown
+ description Corporate
+ ip address 10.10.10.2 255.255.255.0
+ no shutdown
 !
 ip route 0.0.0.0 0.0.0.0 192.168.0.2
 !
 !
 line vty 0 4
-exec-timeout 5 0
-login local
-transport input telnet ssh
-transport output telnet ssh
+ exec-timeout 5 0
+ login local
+ transport input telnet ssh
+ transport output telnet ssh
 !
 !
 end
@@ -243,21 +243,21 @@ BASELINE_FILE = os.path.join(os.getcwd(), "configs", "baselines", "baseline.txt"
 output = os.path.join(os.getcwd(), "diffs.csv")
 
 with open(output, 'w') as csvfile:
-csvwriter = csv.writer(csvfile, lineterminator='\n')
-# write the headers
-csvwriter.writerow(["Comparison", "Baseline", "Additional", "Missing"])
-files = sorted(os.listdir(COMPARISON_DIR))
-for f in files:
-comparison_file = os.path.join(COMPARISON_DIR, f)
-# initialise the diffios Compare object
-diff = diffios.Compare(BASELINE_FILE, comparison_file, IGNORE_FILE)
-csvwriter.writerow([
-f,
-os.path.basename(BASELINE_FILE),
-# write the formatted differences to the csv file
-diff.pprint_additional(),
-diff.pprint_missing()
-])
+    csvwriter = csv.writer(csvfile, lineterminator='\n')
+    # write the headers
+    csvwriter.writerow(["Comparison", "Baseline", "Additional", "Missing"])
+    files = sorted(os.listdir(COMPARISON_DIR))
+    for f in files:
+        comparison_file = os.path.join(COMPARISON_DIR, f)
+        # initialise the diffios Compare object
+        diff = diffios.Compare(BASELINE_FILE, comparison_file, IGNORE_FILE)
+        csvwriter.writerow([
+            f,
+            os.path.basename(BASELINE_FILE),
+            # write the formatted differences to the csv file
+            diff.pprint_additional(),
+            diff.pprint_missing()
+        ])
 ```
 
 ## Development setup
