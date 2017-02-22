@@ -260,6 +260,56 @@ with open(output, 'w') as csvfile:
         ])
 ```
 
+The pretty print methods used above format the data in a more readable manner.
+We can compare the output from the `additional()` method and the
+`pprint_additional()` method.
+
+The `additional()`, and `missing()`, methods return a list of lists that represent
+each block that contains a difference.
+
+```python
+>>> from pprint import pprint
+>>> pprint(diff.additional())
+[['interface FastEthernet0/1', ' ip address 192.168.0.1 255.255.255.128'],
+ ['interface FastEthernet0/2',
+  ' ip address 192.168.0.2 255.255.255.0',
+  ' duplex auto',
+  ' speed auto'],
+ ['interface Vlan300',
+  ' description Corporate',
+  ' ip address 10.10.10.2 255.255.255.0',
+  ' no shutdown'],
+ ['ip route 0.0.0.0 0.0.0.0 192.168.0.2'],
+ ['line vty 0 4',
+  ' transport input telnet ssh',
+  ' transport output telnet ssh']]
+```
+
+Whereas the `pprint_additional()` and `print_missing()` methods return strings
+that represent all the differences, with each block separated by a newline.
+
+```python
+>>> print(diff.pprint_additional())
+interface FastEthernet0/1
+ ip address 192.168.0.1 255.255.255.128
+
+interface FastEthernet0/2
+ ip address 192.168.0.2 255.255.255.0
+ duplex auto
+ speed auto
+
+interface Vlan300
+ description Corporate
+ ip address 10.10.10.2 255.255.255.0
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 192.168.0.2
+
+line vty 0 4
+ transport input telnet ssh
+ transport output telnet ssh
+```
+
 ## Development setup
 
 To run the test suite
