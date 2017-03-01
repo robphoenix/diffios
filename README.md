@@ -6,6 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/pyversions/diffios.svg?style=flat-square)](https://pypi.python.org/pypi/diffios)
 [![PyPI](https://img.shields.io/pypi/status/diffios.svg?style=flat-square)](ttps://pypi.python.org/pypi/diffios)
 [![Coveralls](https://img.shields.io/coveralls/robphoenix/diffios.svg?style=flat-square)](https://coveralls.io/github/robphoenix/diffios?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/diffios/badge/?version=latest&style=flat-square)](http://diffios.readthedocs.io/en/latest/?badge=latest)
 
 diffios is a Python library which provides a way to compare Cisco IOS configurations
 against a baseline template, and generate an output detailing the differences
