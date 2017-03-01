@@ -1,7 +1,6 @@
 # Change Log
 
-## [Unreleased](https://github.com/robphoenix/diffios/tree/HEAD)
-
+## [v0.0.5](https://github.com/robphoenix/diffios/tree/v0.0.5) (2017-03-01)
 **Closed issues:**
 
 - fix delta formatting [\#9](https://github.com/robphoenix/diffios/issues/9)

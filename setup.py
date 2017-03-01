@@ -18,7 +18,7 @@ setup(
     license='MIT',
     url='https://github.com/robphoenix/diffios',
     classifiers=[
-        'Development Status :: 4 - Alpha',
+        'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
