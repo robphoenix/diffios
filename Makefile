@@ -3,3 +3,6 @@ init:
 
 test:
 	pytest
+
+changelog:
+	github_changelog_generator
