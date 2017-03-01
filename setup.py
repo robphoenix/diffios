@@ -2,13 +2,15 @@
 
 from setuptools import setup, find_packages
 
-# Get the long description from the README file
-with open('README.md') as f:
-    long_description = f.read()
+long_description = """
+diffios is a Python library which provides a way to compare Cisco IOS configurations
+against a baseline template, and generate an output detailing the differences
+between them.
+"""
 
 setup(
     name='diffios',
-    version='0.0.4',
+    version='0.0.5',
     description='Compare Cisco device configurations against a baseline.',
     long_description=long_description,
     author='Rob Phoenix',
@@ -16,7 +18,7 @@ setup(
     license='MIT',
     url='https://github.com/robphoenix/diffios',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 4 - Alpha',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
@@ -26,5 +28,4 @@ setup(
         'Programming Language :: Python :: 3.6',
         'License :: OSI Approved :: MIT License',
     ],
-    packages=find_packages(exclude=('tests', 'docs'))
-)
+    packages=find_packages(exclude=('tests', 'docs')))
