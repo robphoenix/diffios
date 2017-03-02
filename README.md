@@ -1,4 +1,4 @@
-![diffios Logo](/images/logo.png)
+![diffios Logo](/docs/source/_static/logo.png)
 
 
 [![Travis](https://img.shields.io/travis/robphoenix/diffios.svg?style=flat-square)](https://travis-ci.org/robphoenix/diffios)
