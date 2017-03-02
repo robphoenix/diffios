@@ -1,5 +1,13 @@
 # Change Log
 
+## [Unreleased](https://github.com/robphoenix/diffios/tree/HEAD)
+
+[Full Changelog](https://github.com/robphoenix/diffios/compare/v0.0.5...HEAD)
+
+**Closed issues:**
+
+- convert README to restructured text [\#16](https://github.com/robphoenix/diffios/issues/16)
+
 ## [v0.0.5](https://github.com/robphoenix/diffios/tree/v0.0.5) (2017-03-01)
 **Closed issues:**
 

@@ -8,7 +8,7 @@ with open('README.rst') as f:
 
 setup(
     name='diffios',
-    version='0.0.8',
+    version='0.0.9',
     description='Compare Cisco IOS configurations against a template.',
     long_description=long_description,
     author='Rob Phoenix',
