@@ -2,16 +2,14 @@
 
 from setuptools import setup, find_packages
 
-long_description = """
-diffios is a Python library which provides a way to compare Cisco IOS configurations
-against a baseline template, and generate an output detailing the differences
-between them.
-"""
+# Get the long description from the README file
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(
     name='diffios',
-    version='0.0.5',
-    description='Compare Cisco device configurations against a baseline.',
+    version='0.0.8',
+    description='Compare Cisco IOS configurations against a template.',
     long_description=long_description,
     author='Rob Phoenix',
     author_email='rob@robphoenix.com',

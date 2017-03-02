@@ -8,6 +8,7 @@ test:
 
 publish:
 	pip install 'twine>=1.5.0'
+	rm -rf dist/*
 	python setup.py sdist
 	python setup.py bdist_wheel --universal
 	twine upload dist/*
