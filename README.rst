@@ -200,34 +200,34 @@ So, now that we have our configurations ready we can compare them.
     --- baseline
     +++ comparison
 
-    1.   1: interface FastEthernet0/1
-    2.   ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
-    3.   2: interface FastEthernet0/2
-    4.   no ip address
-    5.   shutdown
-    6.   3: interface Vlan200
-    7.   description Corporate
-    8.   ip address {{ VLAN200_IP }} 255.255.255.0
-    9.   no shutdown
-    10.   4: line vty 0 4
-    11.   transport input ssh
-    12.   transport output ssh
-    13.   5: username admin privilege 15 secret 5 {{ SECRET }}
+    -   1: interface FastEthernet0/1
+    -       ip address {{ FE_01_IP_ADDRESS }} 255.255.255.0
+    -   2: interface FastEthernet0/2
+    -       no ip address
+    -       shutdown
+    -   3: interface Vlan200
+    -       description Corporate
+    -       ip address {{ VLAN200_IP }} 255.255.255.0
+    -       no shutdown
+    -   4: line vty 0 4
+    -       transport input ssh
+    -       transport output ssh
+    -   5: username admin privilege 15 secret 5 {{ SECRET }}
 
-    14.   1: interface FastEthernet0/1
-    15.   ip address 192.168.0.1 255.255.255.128
-    16.   2: interface FastEthernet0/2
-    17.   ip address 192.168.0.2 255.255.255.0
-    18.   duplex auto
-    19.   speed auto
-    20.   3: interface Vlan300
-    21.   description Corporate
-    22.   ip address 10.10.10.2 255.255.255.0
-    23.   no shutdown
-    24.   4: ip route 0.0.0.0 0.0.0.0 192.168.0.2
-    25.   5: line vty 0 4
-    26.   transport input telnet ssh
-    27.   transport output telnet ssh
+    +   1: interface FastEthernet0/1
+    +       ip address 192.168.0.1 255.255.255.128
+    +   2: interface FastEthernet0/2
+    +       ip address 192.168.0.2 255.255.255.0
+    +       duplex auto
+    +       speed auto
+    +   3: interface Vlan300
+    +       description Corporate
+    +       ip address 10.10.10.2 255.255.255.0
+    +       no shutdown
+    +   4: ip route 0.0.0.0 0.0.0.0 192.168.0.2
+    +   5: line vty 0 4
+    +       transport input telnet ssh
+    +       transport output telnet ssh
 
 The output above lists the lines of configuration that are missing from our
 device but that are present in our baseline template, shown by lines prefixed
