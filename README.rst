@@ -25,21 +25,31 @@ more manageable.
 
 .. image:: https://img.shields.io/travis/robphoenix/diffios.svg?style=flat-square
    :target: https://travis-ci.org/robphoenix/diffios
+   :alt: Travis
 
 .. image:: https://img.shields.io/pypi/v/diffios.svg?style=flat-square
    :target: https://pypi.python.org/pypi/diffios
+   :alt: Version
 
 .. image:: https://img.shields.io/pypi/pyversions/diffios.svg?style=flat-square
    :target: https://pypi.python.org/pypi/diffios
+   :alt: Python Versions
 
 .. image:: https://img.shields.io/pypi/status/diffios.svg?style=flat-square
    :target: https://pypi.python.org/pypi/diffios
+   :alt: Status
 
 .. image:: https://img.shields.io/coveralls/robphoenix/diffios.svg?style=flat-square
    :target: https://coveralls.io/github/robphoenix/diffios?branch=master
+   :alt: Coveralls
 
 .. image:: https://readthedocs.org/projects/diffios/badge/?version=latest&style=flat-square
    :target: http://diffios.readthedocs.io/en/latest/?badge=latest
+   :alt: Read the Docs
+
+.. image:: https://codeclimate.com/github/robphoenix/diffios/badges/gpa.svg?style=flat-square
+   :target: https://codeclimate.com/github/robphoenix/diffios
+   :alt: Code Climate
 
 Installation
 ------------
