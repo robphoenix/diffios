@@ -1,7 +1,12 @@
+
+.. image:: http://unmaintained.tech/badge.svg
+    :target: http://unmaintained.tech/
+    :alt: No Maintenance Intended
+----
+    
 .. image:: https://raw.githubusercontent.com/robphoenix/diffios/master/docs/_static/logo.png
     :target: https://diffios.readthedocs.io/en/latest/
-
-
+   
 diffios is a Python library that provides a way to compare Cisco IOS configurations
 against a baseline template, and generate an output detailing the differences
 between them.
